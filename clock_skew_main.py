@@ -60,7 +60,8 @@ def Handler(frame) :
   #conversion Constant for microseconds
   CONV = 1000000
   # is passed data is an 802.11 Frame start processing
-  if frame.haslayer(Dot11):
+  # test if frame has info (evevry 500 or so encoutered frame that raised attribute error)
+  if frame.haslayer(Dot11) and hasattr(frame.payload, "info"):
   		'''
 		test if 802.11 frame is a management frame(0) of subtype beacon (8)
 		and the SSID of the frame is the same as specified target
