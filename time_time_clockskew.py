@@ -64,8 +64,8 @@ def Handler(pkt) :
 			x.append(elapasedTime / CONV)
 			y.append(clockOffset)
 
-			if beaconNumber == 150:	
-			#if unmod >= 15:	
+			#if beaconNumber == 150:	
+			if elapasedTime / CONV >= 60:	
 				import numpy as np
 				import matplotlib.pyplot as plt
 				import matplotlib.pyplot as mpl

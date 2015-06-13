@@ -61,7 +61,7 @@ def Handler(frame) :
   CONV = 1000000
   # is passed data is an 802.11 Frame start processing
   # test if frame has info (evevry 500 or so encoutered frame that raised attribute error)
-  if frame.haslayer(Dot11) and hasattr(frame.payload, "info"):
+  if frame.haslayer(Dot11):# and hasattr(frame.payload, "info"):
   		'''
 		test if 802.11 frame is a management frame(0) of subtype beacon (8)
 		and the SSID of the frame is the same as specified target
@@ -169,13 +169,16 @@ def Handler(frame) :
 
 				import matplotlib.pyplot as mpl
 				mpl.plot(x, y, label="offset", color="red", linestyle='-',linewidth=1)
-				mpl.plot(time, yp, label="least regression", color="blue")
+				mpl.plot(time, yp, label="linear regression", color="blue")
 				# add a grid
 				mpl.grid(True)
+				# set the max for the xsis (neatness)
 				mpl.xlim(xmax=int(max(x)))
+				# arrange ticks for x axis
 				mpl.xticks(np.arange(min(x), int(max(x)) + 1, 1.0))
 				mpl.xlabel('Seconds')
 				mpl.ylabel('Microsecond Offset')
+				# title is the SSID
 				mpl.title(frame.info)
 				mpl.legend()
 				mpl.show()
@@ -211,39 +214,40 @@ def Handler(frame) :
 				print "RMSE", rmse
 				
 				# plot the scatter for testing
-				pylab.xlim(xmin=0)
-				plt.grid(True)
+				# pylab.xlim(xmin=0)
+				# plt.grid(True)
 
-				#force beacons
-				switch = "0"
-				if switch == "0":	
-					pylab.xlim(xmin=1)
-					plt.scatter(beacon, clockoset)
-					plt.plot(beacon, yp)
-				else:
-					pylab.xlim(xmin=0)
-					pylab.xlim(xmax=int(max(time)))
-					plt.scatter(time, clockoset)
-					plt.plot(time, yp)				
+				# #force beacons
+				# switch = "0"
+				# if switch == "0":	
+				# 	pylab.xlim(xmin=1)
+				# 	plt.scatter(beacon, clockoset)
+				# 	plt.plot(beacon, yp)
+				# else:
+				# 	pylab.xlim(xmin=0)
+				# 	pylab.xlim(xmax=int(max(time)))
+				# 	plt.scatter(time, clockoset)
+				# 	plt.plot(time, yp)				
 				
 				
-				label = "Seconds"
-				if switch == "0":
-					label = "Beacons"
-					plt.xticks(np.arange(min(beacon) - 1, max(beacon) + 10, 10.0))
-				else:
-					#plt.xticks(np.arange(min(x), max(x), 1.0))	
-					plt.xticks(np.arange(min(x), int(max(x)) + 1, 1.0))	
+				# label = "Seconds"
+				# if switch == "0":
+				# 	label = "Beacons"
+				# 	plt.xticks(np.arange(min(beacon) - 1, max(beacon) + 10, 10.0))
+				# else:
+				# 	#plt.xticks(np.arange(min(x), max(x), 1.0))	
+				# 	plt.xticks(np.arange(min(x), int(max(x)) + 1, 1.0))	
 
-				plt.xlabel(label)
-				plt.ylabel('Microsecond offset')
-				plt.show() 
+				# plt.xlabel(label)
+				# plt.ylabel('Microsecond offset')
+				# plt.show() 
 
 				d = {"rmse": rmse, "ssid": frame.info, "m": m, "b": b, "yp" : yp, "x":x, "y":y ,"beaconNumber": beaconNumber, "secondsCounter": secondsCounter, "bssid": frame.addr2}
 
 				f = open('output.txt', 'w')
 				j = dumps(d, cls=PythonObjectEncoder)
-				f.write(j)                        
+				f.write(j) 
+				print "no beacons collected", beaconNumber                       
 				sys.exit(0)
 
 sniff(iface=ifaceno, prn = Handler)
