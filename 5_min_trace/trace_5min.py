@@ -66,17 +66,18 @@ plt.grid(True)
 pylab.xlim(xmin=0)
 pylab.xlim(xmax=int(max(time)))
 linew = 0.5
-plt.plot(time, zoom2["y"], label="HW - Zoom 4403", color="grey", linestyle='-',linewidth=1, antialiased=True, alpha=1.00)
-#plt.plot(nexus_airbase_ng["x"], nexus_airbase_ng["y"], label="SW - Nexus AirBase-NG 1", color="blue", linestyle='-',linewidth=1)
-plt.plot(tplink["x"], tplink["y"], label="HW - TPlink 0000", color="red", linestyle='-',linewidth=1, antialiased=True)
-plt.plot(zyxel["x"], zyxel["y"], label="HW - zyxel", color="green", linestyle='-',linewidth=1, antialiased=True)
+fsize = 'x-large'
+plt.plot(time, zoom2["y"], label="HW: Router - Zoom 4403", color="green", linestyle='-',linewidth=1, antialiased=True, alpha=1.00)
+plt.plot(tplink["x"], tplink["y"], label="HW: Router - TPlink TD-W8980", color="red", linestyle='-',linewidth=1, antialiased=True)
+#plt.plot(zyxel["x"], zyxel["y"], label="HW: Router - zyxel", color="green", linestyle='-',linewidth=1, antialiased=True)
 #plt.plot(lenovo_airbase_ng["x"], lenovo_airbase_ng["y"], label="SW - Lenovo G570 AirBase-NG", color="pink", linestyle='-',linewidth=linew, antialiased=True)
-plt.plot(nexus_thether["x"], nexus_thether["y"], label="SW - Nexus Android Thether", color="yellow", linestyle='-',linewidth=1, antialiased=True)
-plt.plot(kalivm_airbase_ng["x"], kalivm_airbase_ng["y"], label="SW - Kali VM AirBase-NG", color="blue", linestyle='-',linewidth=linew, antialiased=True)
-plt.plot(nexus_nethunter["x"], nexus_nethunter["y"], label="SW - Nexus HostAPD", color="orange", linestyle='-',linewidth=1, antialiased=True)
-plt.plot(second_airbng_nexus["x"], second_airbng_nexus["y"], label="SW - Nexus AirBase-NG 2", color="purple", linestyle='-',linewidth=linew, antialiased=True)
-plt.plot(pineapple_hostapd["x"], pineapple_hostapd["y"], label="SW - PineApple HostAPD", color="black", linestyle='-',linewidth=1, antialiased=True)
-plt.xticks(np.arange(min(time), int(max(time)) + 1, 20.0))	
+plt.plot(nexus_thether["x"], nexus_thether["y"], label="SW: Android - Nexus5", color="orange", linestyle='-',linewidth=1, antialiased=True)
+plt.plot(kalivm_airbase_ng["x"], kalivm_airbase_ng["y"], label="SW: AirBase-NG - Kali VirtualMachine", color="blue", linestyle='-',linewidth=linew, antialiased=True)
+plt.plot(second_airbng_nexus["x"], second_airbng_nexus["y"], label="SW: AirBase-NG - Nexus5", color="purple", linestyle='-',linewidth=linew, antialiased=True)
+#plt.plot(nexus_airbase_ng["x"], nexus_airbase_ng["y"], label="SW: AirBase-NG - Nexus5", color="magenta", linestyle='-',linewidth=1)
+plt.plot(pineapple_hostapd["x"], pineapple_hostapd["y"], label="SW: HostAPD - Alfa AP-121U ", color="black", linestyle='-',linewidth=1, antialiased=True)
+#plt.plot(nexus_nethunter["x"], nexus_nethunter["y"], label="SW: HostAPD - Nexus5 ", color="orange", linestyle='-',linewidth=1, antialiased=True)
+plt.xticks(np.arange(min(time), int(max(time)) + 1, 50.0))	
 
 
 # size = 5
@@ -86,20 +87,18 @@ plt.xticks(np.arange(min(time), int(max(time)) + 1, 20.0))
 # plt.scatter(zyxel["x"], zyxel["y"], label="HW - zyxel", color="green",marker="1", antialiased=True, s=size)
 # plt.scatter(lenovo_airbase_ng["x"], lenovo_airbase_ng["y"], label="SW - Lenovo G570 AirBase-NG", color="black",marker="1", antialiased=True, s=size)
 # plt.scatter(nexus_thether["x"], nexus_thether["y"], label="SW - Nexus Android Thether", color="yellow", marker="1", antialiased=True, s=size)
-# plt.scatter(kalivm_airbase_ng["x"], kalivm_airbase_ng["y"], label="SW - Kali VM AirBase-NG", color="blue", marker="1", antialiased=True, s=size)
+# plt.scatter(kalivm_airbase_ng["x"], kalivm_airbase_ng["ali VM AirBase-NG", color="blue", marker="1", antialiased=True, s=size)
 # plt.scatter(nexus_nethunter["x"], nexus_nethunter["y"], label="SW - Nexus HostAPD", color="orange",marker="1",  antialiased=True, s=size)
 # plt.scatter(second_airbng_nexus["x"], second_airbng_nexus["y"], label="SW - Nexus AirBase-NG 2", color="purple", marker="1", antialiased=True, s=size)
-# plt.scatter(pineapple_hostapd["x"], pineapple_hostapd["y"], label="SW - PineApple HostAPD", color="black", marker="1", antialiased=True, s=size)
+# plt.scatter(pineapple_hostapd["x"], pineapple_hostap="SW - PineApple HostAPD", color="black", marker="1", antialiased=True, s=size)
 # plt.xticks(np.arange(min(time), int(max(time)) + 1, 10.0))	
 
-
-
-plt.xlabel("Seconds")
-plt.ylabel('Microsecond offset')
+plt.xlabel("Seconds", fontsize = 'x-large')
+plt.ylabel('Microsecond offset', fontsize = 'x-large')
 from matplotlib import legend_handler
 
 
-leg = plt.legend(loc=3, fancybox=True, shadow=True)
+leg = plt.legend(loc=3, fancybox=True, shadow=True, fontsize = 'x-large')
 
 for legobj in leg.legendHandles:
     legobj.set_linewidth(4.0)
