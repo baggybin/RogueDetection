@@ -11,18 +11,17 @@ from scapy.all import *
 class Scapy80211():
     def  __init__(self,intf='wlan4',
       ssid='JimmyShoes',\
-          source='11:22:33:44:55:66',\
+          source='00:C0:CA:57:23:4A',\
           bssid='00:11:22:33:44:55',srcip='10.10.10.10', mon = "wlan4"):
-
       self.rates = "\x03\x12\x96\x18\x24\x30\x48\x60"
-
       self.ssid    = ssid
       self.source  = source
       self.srcip   = srcip
-      self.bssid   = bssid
+      self.bssid   = bssid  
       self.intf    = intf
       self.intfmon = mon
-
+      dst="c8:3a:35:c5:d3:ed"
+      dst='ff:ff:ff:ff:ff:ff'
       # set Scapy conf.iface
       conf.iface = self.intfmon
 
@@ -42,6 +41,8 @@ class Scapy80211():
       except:
         raise
 
+ 
+ #c8:3a:35:c5:d3:ed
 
 
     
@@ -49,5 +50,5 @@ class Scapy80211():
 if __name__ == "__main__":
   import random
   val = "XXXX"
-  sdot11 = Scapy80211(intf='wlan4', ssid=val)
+  sdot11 = Scapy80211(intf='wlan4', ssid="evil")       #bssid="c8:3a:35:c5:d3:ed"
   sdot11.ProbeReq()
