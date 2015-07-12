@@ -1,44 +1,50 @@
-import sys, os 
+import sys
 from multiprocessing import Process
 from scapy.all import *
 import binascii
-
-os.system("ifconfig %s down" % "wlan0")
-os.system("sudo iw dev wlan0 set type monitor")
-os.system("ifconfig wlan0 up")
+import os
+os.system("ifconfig %s down" % "wlan2")
+os.system("sudo iw dev wlan2 set type monitor")
+os.system("ifconfig wlan2 up")
 # print "Monitor setup done"
 
 interface =""
 
-def sniffAP(p):
-    if ((p.haslayer(Dot11Beacon))):
-        ssid       = p[Dot11Elt].info
-        bssid      = p[Dot11].addr3    
-        channel    = int(ord(p[Dot11Elt:3].info))
-        print "%d  %s  %s" % (channel, bssid, ssid) 
-        print p.sprintf("%Dot11.addr2%[%Dot11Elt.info%|%Dot11Beacon.cap%]")
-        print "RSSI"
-        print -(256 - int(binascii.hexlify(p.notdecoded[-4:-3]), 16))
-        print "Sequence Number"
-        print p.SC
+
+def sniffAP(pkt):
+    if pkt.haslayer(Dot11ProbeResp):
+        ssid       = pkt[Dot11Elt].info
+        print ssid
+
 
 def ch_hopp():
     while True:
         try:
-            channel = random.randrange(1,13)
-            os.system("iw dev %s set channel %d" % (interface, channel))
-            time.sleep(1)
-        except KeyboardInterrupt:
-            break
-
+            channel = int(random.randrange(1,13))
+            channel = 11
+            #os.system("iwconfig %s channnel %d" % (interface, channel))
+            try:
+                proc = Popen(['iw', 'dev', interface, 'set', 'channel', channel], stdout=DN, stderr=PIPE)
+            except OSError:
+                sys.exit(1)
+        except:
+            pass
+            
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print "Usage %s monitor_interface" % sys.argv[0]
         sys.exit(1)
 
-    interface = sys.argv[1]
-    print "CH  BSSID             SSID"
-    p = Process(target = ch_hopp)
-    p.start()
+       
+    #p = Process(target = ch_hopp)
+    #p.start()
+      
+    #interface = sys.argv[1]
+    #try:
+    #    proc = Popen(['iw', 'dev', interface, 'set', 'channel', 11], stdout=DN, stderr=PIPE)
+    #except OSError:
+    #    sys.exit(1)
 
+    
+    interface = sys.argv[1]
     sniff(iface=interface,prn=sniffAP)

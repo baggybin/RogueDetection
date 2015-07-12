@@ -46,7 +46,7 @@ class probeTesing():
       self.intfmon = self.intf    
 
       ## set Scapy conf.iface
-      #conf.iface = self.intfmon
+      conf.iface = self.intfmon
 
       # creating monitor interface using iw
       # command is passs
@@ -72,14 +72,8 @@ class probeTesing():
       # Frame set to be leaving the distribution system
       dsset = Dot11Elt(ID='DSset',info='\x01')
       '''
-      radiotap headers provide additional information that is added to each 802.11 frame when capturing frames
-      with an analysis application. Just to be clear, these are not part of the standard 802.11 frame format,
-      but are additional information added at the time of capture to provide supplementary data about the frames captured.
-      For instance, in a standard 802.11 traffic capture, there is no information regarding the receive signal level for the
-      frame at the time of capture, which could be very useful. As another example, there is no information about which channel is
-      being used by a station that has generated the frame, which again could be very useful.
+      radiotap header
       '''
-      
       #Here the final 802.11 probe Request frame is construcgtedec by concatantating eacg object to ther next
       pkt = RadioTap()\
         /Dot11(type=0,subtype=4,addr1=dst,addr2=self.source,addr3=self.bssid)\

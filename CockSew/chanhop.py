@@ -35,8 +35,20 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print "Usage %s monitor_interface" % sys.argv[0]
         sys.exit(1)
+        
+        
+    
 
     interface = sys.argv[1]
+    
+    
+    os.system("sudo ifconfig " + interface + " down" )
+    os.system("iwconfig " + interface + " essid " + fakeSSID )
+    os.system("ifconfig " + interface + " up")
+    
+    
+    
+    
     print "CH  BSSID             SSID"
     p = Process(target = ch_hopp)
     p.start()
