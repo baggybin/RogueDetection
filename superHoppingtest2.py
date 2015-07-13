@@ -45,7 +45,7 @@ class superHoppingtest:
             os.system("sudo ifconfig wlan4 down" )
             os.system("iwconfig wlan4 essid " + fakeSSID )
             os.system("ifconfig wlan4 up")
-            time.sleep(10)
+            time.sleep(20)
             
             
             '''
@@ -61,19 +61,16 @@ class superHoppingtest:
             #    ch_hopp()
         
     
-
+  
+    
 if __name__ == '__main__':
-   # proc = subprocess.Popen("python sniffer.py",shell=True)
     S = superHoppingtest()
     S.fakeSSID()
     
-    
-    
-    
-    
-    
-    
-    
+    #import subprocess
+    #p = subprocess.Popen(["python sniffer.py"], stdout=subprocess.PIPE)
+    #out, err = p.communicate()
+
 
 
 

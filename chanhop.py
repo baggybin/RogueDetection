@@ -34,17 +34,6 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print "Usage %s monitor_interface" % sys.argv[0]
         sys.exit(1)
-
-       
-    #p = Process(target = ch_hopp)
-    #p.start()
-      
-    #interface = sys.argv[1]
-    #try:
-    #    proc = Popen(['iw', 'dev', interface, 'set', 'channel', 11], stdout=DN, stderr=PIPE)
-    #except OSError:
-    #    sys.exit(1)
-
     
     interface = sys.argv[1]
     sniff(iface=interface,prn=sniffAP)
