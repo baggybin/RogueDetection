@@ -23,7 +23,8 @@ import time
 
 try:
     read =  READ()
-except Exception
+except: Exception
+passs
 
 class  READ(Thread):
     def __init__(self):
