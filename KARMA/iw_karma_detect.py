@@ -1,25 +1,26 @@
 #!/usr/bin/env python
-import sys, os, signal
+#imports
+import sys, os
 from scapy.all import *
-import time
 import subprocess
 import re
 '''
-funtiom to randomlu hop through IEEE channels
-may test it with sequential ordering
+KARAMID Class TO gneerate randon SSID's and apply them to a local interface
+so that the the local kernel will probe for them 
 '''
-
-
 class karmaid:
-    """main class"""
+    """main class constructor"""
     def __init__(self):
+        #count the the karma Rouge
         self.count = 0
-        self.mac =""
+        #Store them
         self.KARMAAP = []
+        #How many time tto run the test
+        self.range = 5
       
     def fakeSSID(self):        
-        for i in range(5):   
-            #gneerate a small 16 character SSID Randomly 
+        for i in range(self.range):   
+            #gneerate a small 16 character sequence SSID Randomly 
             fakeSSID =''.join(random.choice('0123456789ABCDEF') for i in range(16))
             
             print "________________________________"
@@ -75,12 +76,15 @@ class karmaid:
                         print  "KARMA BSSSID Seen Before"
                     #store BAD access point
                     self.KARMAAP.append(output2)
+                    print "KARMA Dectected " + str(self.count) + " times"
                     print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            print "KARMA Dectected " + str(self.count) + " times"
-            
-            return self.count
-            
-            
+
+            # Test that all the KARMA acccess point are using the same BSSSID (if not stilll could just rnadomise BSSID)
+            result =  self.KARMAAP and all( self.KARMAAP[0] == elem for elem in  self.KARMAAP)
+            print  "**********************************************************************************************"
+            print  "Same KARMA Acccess Point in all instanaces " + self.KARMAAP[0]
+
+
 ##main script start
 if __name__ == '__main__':
     ##main stop interfeering services and then start program
@@ -89,6 +93,7 @@ if __name__ == '__main__':
     k.fakeSSID()
     
     
+    print "\n\n"
     print "Restarting Services"
     os.system("service network-manager start")
     os.system("dhclient")

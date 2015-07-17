@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#imporetd
 import sys, os, signal
 from multiprocessing import Process
 from scapy.all import *
@@ -14,7 +15,10 @@ import time
 import logging
 
 
-
+''''
+KARAMID Class TO gneerate randon SSID's and apply them to a local interface
+so that the the local kernel will probe for them 
+''''
 class karmaid:
     """main class"""
     def __init__(self):
