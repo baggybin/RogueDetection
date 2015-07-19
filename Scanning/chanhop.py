@@ -15,9 +15,11 @@ working very very slowly
 
 class scanning:
     """Class for a user of the chat client."""
-    def __init__(self, intf):
+    def __init__(self, intf, count):
         self.intf = intf
         self.counter = 0
+        self.count = count
+        self.accessPoints = []
         os.system("sudo ifconfig %s down" %  self.intf )
         os.system("sudo iw dev "+  self.intf + " set type monitor")
         os.system("sudo ifconfig %s up" %  self.intf )
@@ -29,28 +31,44 @@ class scanning:
                print "channel Change", channel
            except Exception, err :
                print err             
+ 
         
     def sniffAP(self):
-        ap_set = set()
         print "Started Sniff"
         def PacketHandler(frame):
-            # if pkt.haslayer(Dot11):#and (pkt.type, pkt.subtype) == (0, 0) and pkt.addr2 not in ap_set:
-            #     #ap_set.add(pkt.addr2
-            
-          FT = {0:"Management", 1:"Control", 2:"data"}
-          FS = {0:"Association request", 1:"Association response", 2:"Reassociation request", 3:"Reassociation response", 4:"Probe request ", \
-          5:"Probe response", 8:"Beacon"}
-
+          try:
+            FT = {0:"Management", 1:"Control", 2:"data"}
+            FS = {0:"Association request", 1:"Association response", 2:"Reassociation request", 3:"Reassociation response", 4:"Probe request ", \
+            5:"Probe response", 8:"Beacon"}
+          except ValueError:
+                print "unknown type"
+     
+          #print "tyupe", type(frame)
           if  frame.haslayer(Dot11):    
-            print FT[frame.type]
-            print FS[frame.subtype]
-                  
+            if frame.type == 0 and frame.subtype == 8:
+                if frame not in self.accessPoints:
+                    print "AP MAC: %s with SSID: %s " %(frame.addr2, frame.info)    
+                    self.accessPoints.append(frame)
+                    
+          #def unique(lst):
+          #  return [] if lst==[] else [lst[0]] + unique(filter(lambda x: x!= lst[0], lst[1:]))  
+          #
+          #u = unique(self.accessPoints)
+          #for frame in u:
+          #  print frame.info
+          #from operator import itemgetter
+          #sorted(self.accessPoints, key=itemgetter('ssid', 'info'))
+
+             
           self.counter +=1
-          if self.counter % 5 == 0:
-              self.ch_hop()  
+          if self.counter % 2 == 0:
+              self.ch_hop()
+              
 
-        sniff(iface=self.intf, prn=PacketHandler)
-
+        sniff(iface=self.intf, count = self.count, prn=PacketHandler)
+        
+        return self.accessPoints
+    
 '''
 Association request wlan.fc.type_subtype eq 0
 Association response wlan.fc.type_subtype eq 1
@@ -71,12 +89,25 @@ Request to Send wlan.fc.type_subtype eq 27
 Clear to Send wlan.fc.type_subtype eq 28 
 '''
 
-            
-
 
 if __name__ == '__main__':
-    s = scanning(intf="wlan3")
-    s.sniffAP()
+    s = scanning(intf="wlan4", count = 50)
+    #s.sniffAP()
+    f = s.sniffAP()
+    
+    print "-----------------------------------------------------------------------------------"
+    #for frame in unuiqe:
+    #  print frame.info, "  ", frame.addr2
+    
+    
+    uniuqeSSID = []
+    for frame in f:
+        if frame.info not in uniuqeSSID:
+            uniuqeSSID.append(frame.info)
+            print frame.addr2 , " : " ,frame.info
+        
+        
+    
     
     
 
