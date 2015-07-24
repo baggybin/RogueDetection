@@ -31,7 +31,7 @@ class probeTesing():
                    intf='wlan4',
                    ssid='test',
                    source='00:C0:CA:57:23:4A',
-                   bssid='00:11:22:33:44:55',
+                   bssid='ff:ff:ff:ff:ff:ff',
                    dst='ff:ff:ff:ff:ff:ff',
                    srcip='10.10.10.10'):
 
@@ -62,7 +62,8 @@ class probeTesing():
 #It will send itself 10 times to either broadcast "" nulll ssid or specified
 #destination is broadcast as default
    def ProbeReq(self,count=10,ssid='',dst="ff:ff:ff:ff:ff:ff"):
-      if not ssid: ssid=self.ssid
+      if not ssid: 
+      	ssid=self.ssid
       #create probeRequest Object
       ProbeReq = Dot11ProbeReq()
       #Esssid object with the target name
@@ -82,7 +83,7 @@ class probeTesing():
 
 
 
-      print '---- 802.11 Probe Request: SSID=[%s], count=%d' % (ssid,count)
+      print 'Probe Request: SSID=[%s], count=%d' % (ssid,count)
       try:
         # sendp() inijection function works at layer 2
         sendp(pkt,count=count,inter=0.1, verbose=0)
@@ -104,12 +105,6 @@ if __name__ == "__main__":
 #grab an interface to pout into monitor mode
 intf = str(sys.argv[1])
           
-
-#implement to allow directed probes 
-#if sys.argv[2] == 1:
-#  print "enter directed probe here"
-  
-
 #Channnel hopping so porbe are sent on all avaiilable channnls. 
 channel = 0
 for i in range(10):

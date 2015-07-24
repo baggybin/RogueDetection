@@ -1,27 +1,37 @@
+#import the wifi modules
 from wifi import Cell, Scheme
+#scan with the wireless interface
 cell = Cell.all('wlan4')
 
 Auth_AP = {}
 S = []
-count = 0 
+#have a counter for user choice input
+count = 0
+'''
+for each access point stored
+add to counter
+print out the ssid for choice
+and store in in LIST
+'''
 for c in cell:
 	count += 1
 	print ":"+ str(count), " ssid:", c.ssid
-	SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, "frequency":c.frequency,	"address":c.address, "signal":c.signal,  "mode":c.mode}
+	#create dictionary with informnation on the accesss point
+	SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+		 "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+	#append this dictionary to a list
 	S.append(SSIDS)
-	#"bitrates":c.bitrates,
 
-
+## get choice from the user
 input_var = int(input("Choose: "))
 print "-----------------------------------------"
-
+'''
+at the moment just print out information abount the chosen access point
+'''
 ap = S[input_var - 1]
-
 print ap["ssid"]
-
 # store aurtorised in a dictionary
 Auth_AP[ap["ssid"]] = ap
-
 print "__________________"
 print Auth_AP
 

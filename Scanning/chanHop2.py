@@ -52,7 +52,7 @@ class scanning:
 
 
 if __name__ == '__main__':
-    s = scanning(intf="wlan3")
+    s = scanning(intf="wlan4")
     s.sniffAP()
     
     

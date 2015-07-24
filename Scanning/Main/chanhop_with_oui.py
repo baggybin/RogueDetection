@@ -6,8 +6,7 @@ import os
 from threading import Thread
 from subprocess import Popen
 import time
-
-
+from netaddr import *
 
 '''
 working very very slowly
@@ -47,19 +46,9 @@ class scanning:
           if  frame.haslayer(Dot11):    
             if frame.type == 0 and frame.subtype == 8:
                 if frame not in self.accessPoints:
-                    print "AP MAC: %s with SSID: %s " %(frame.addr2, frame.info)    
+                    print "AP MAC: %s "%(frame.addr2)    
                     self.accessPoints.append(frame)
-                    
-          #def unique(lst):
-          #  return [] if lst==[] else [lst[0]] + unique(filter(lambda x: x!= lst[0], lst[1:]))  
-          #
-          #u = unique(self.accessPoints)
-          #for frame in u:
-          #  print frame.info
-          #from operator import itemgetter
-          #sorted(self.accessPoints, key=itemgetter('ssid', 'info'))
-
-             
+                                
           self.counter +=1
           if self.counter % 2 == 0:
               self.ch_hop()
@@ -99,12 +88,29 @@ if __name__ == '__main__':
     #for frame in unuiqe:
     #  print frame.info, "  ", frame.addr2
     
-    
+    import manuf
     uniuqeSSID = []
     for frame in f:
         if frame.info not in uniuqeSSID:
             uniuqeSSID.append(frame.info)
-            print frame.addr2 , " : " ,frame.info
+            print frame.addr2
+            p = manuf.MacParser()
+            test = p.get_all(frame.addr2)
+            if test.manuf is not None:
+                print test
+            else:
+                print "Fake mac address"
+  
+
+  
+  #net adddr was failing to validate mac OUI
+            #mac = EUI(frame.addr2)
+            #print  mac.is_iab()
+            #iab = mac.iab
+            #iab
+            #if mac.is_iab():
+            #   print  iab.registration()
+            
         
         
     
@@ -122,3 +128,13 @@ if __name__ == '__main__':
     
     
    
+def checkmylist(li):
+    start=int(li[0])
+    print start,"start"
+    for e in li[1:]:
+        a=int(e)
+        if a==start+1:
+            start=a
+        else:
+            return False
+    return True
