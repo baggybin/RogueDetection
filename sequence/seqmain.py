@@ -202,8 +202,8 @@ if __name__ == '__main__':
     
     if input_var == 1:
         db = TinyDB('db.json')
-        db.purge()
-        db.insert(S[input_var - 1])
+        #db.purge()
+        #db.insert(S[input_var - 1])
         
         #val = db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"])))
         #val = db.search((where('ssid') == 'Zoom') & (where('address') == "aa:bb:cc:dd:ee:ff"))

@@ -157,7 +157,7 @@ def Handler(frame) :
 				creating a set of values yp
 				'''
 				yp = polyval([m,b],time)
-				print yp
+				#print yp
 				
 				#model predicitons for each time entry 
 				model = []

@@ -14,13 +14,15 @@ from wifi import Cell, Scheme
 from tinydb import TinyDB, where
 import logging
 logger = logging.getLogger('tiny.py')
-hdlr = logging.FileHandler('myapp.log')
+hdlr = logging.FileHandler("RougeID.log")
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.WARNING)
 from iw_karma_detect import *
-from clock_skew_main import *
+from clock_skew_main1 import *
+from subprocess import check_output
+from decimal import * 
 
 '''
 working very very slowly
@@ -166,8 +168,25 @@ class scanning:
 # zoom1
 # "00:50:18:66:89:D6"
 
+def chann_change(channel):
+    os.system("sudo ifconfig %s down" % "wlan4" )
+    os.system("sudo iw dev "+ "wlan4" + " set type monitor")
+    os.system("sudo ifconfig %s up" %  "wlan4")
+    try:
+        os.system("sudo iw dev %s set channel %d" % ("wlan4", channel))
+        print "channel Change", channel
+        print ""
+    except Exception, err :
+           print err
+           
+def managed():
+    os.system("sudo ifconfig %s down" % "wlan4" )
+    os.system("sudo iw dev "+ "wlan4" + " set type managed")
+    os.system("sudo ifconfig %s up" %  "wlan4")
+
 
 if __name__ == '__main__':
+    from tinydb import TinyDB, where
     choice = str(raw_input("Do you Wish to Scan for KARMA access points y/n"))
     if choice == "y" or choice == "Y":  
         k = karmaid()
@@ -180,32 +199,54 @@ if __name__ == '__main__':
 
     choice = str(raw_input("Do you Wish to Scan for Airbase-NG Access Points y/n \n"))
     if choice == "y" or choice == "Y":
+        managed()
+        ce = Cell.all("wlan4")
+        s = []
+        count = 0
+        for c in ce:
+            count += 1
+            print ":"+ str(count), " ssid:", c.ssid
+                #create dictionary with informnation on the accesss point
+            SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+                        "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+                #append this dictionary to a list
+            s.append(SSIDS)        
+        
+        input_var = int(input("Choose: "))
+        print "-----------------------------------------"
+        target = s[input_var - 1]
+        
+        chann_change(target["channel"])
         #targetSSID , ifaceno, switch, amount
-        Clock = ClockSkew("Zoom", "wlan4", 1 , 300)
-        Clock.mode(1)
-        val  = Clock.clock_skew()
-        print val
-        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-        print 
-        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+        clock = ClockSkew(target["ssid"])
+        clock.overlordfuntion()
+        clock.rmse_function()
+        time.sleep(0.2)
+        f = open('rmse.txt','r')
+        val3 = f.read()
+        f.close()
+
+        if Decimal(val3) > 299:     
+           print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+           print "Possible AIRBASE-NG Software Based Access Point"
+           print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
     else:
-        pass    
+          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          print "<<<<<<<<<<<<          Normal <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 
-    print ""   
+    print ""
+    
     interface = str(raw_input("Choose Interface for monitor: "))
     os.system("sudo ifconfig %s down" %  interface)
     os.system("sudo iwconfig "+  interface + " mode managed")
     os.system("sudo ifconfig %s up" %  interface )
     cell = Cell.all(interface)
     db = TinyDB('db.json')
-    
-    
     Auth_AP = {}
     S = []
     #have a counter for user choice input
     count = 0
-
     for c in cell:
         count += 1
         print ":"+ str(count), " ssid:", c.ssid
@@ -214,10 +255,6 @@ if __name__ == '__main__':
                     "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
             #append this dictionary to a list
         S.append(SSIDS)
-    
-    
-    
-    
     ## get choice from the user
     input_var = int(input("Choose: "))
     print "-----------------------------------------"
@@ -227,8 +264,6 @@ if __name__ == '__main__':
     print ap["encrypted"]
     print ap["channel"]
     print "---------------------------------------------"
-    
-
     
     loop = True
     while loop:
@@ -242,11 +277,14 @@ if __name__ == '__main__':
     if input_var == 1:
         #db.purge()
         #db.insert(S[input_var - 1])
+        #if db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
+        #    db.insert(ap)
+        #else:
+        #    print "This is already Stored in the database"
         if db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
-            db.insert(ap)
+            db.insert(S[input_var - 1])
         else:
-            print "This is already Stored in the database"
-
+            print "already Stored in the database"
         
         '''
         print all database
