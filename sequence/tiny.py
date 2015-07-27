@@ -12,6 +12,15 @@ import math
 import threading
 from wifi import Cell, Scheme
 from tinydb import TinyDB, where
+import logging
+logger = logging.getLogger('tiny.py')
+hdlr = logging.FileHandler('myapp.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+logger.setLevel(logging.WARNING)
+from iw_karma_detect import *
+from clock_skew_main import *
 
 '''
 working very very slowly
@@ -103,23 +112,24 @@ class scanning:
                 
             except:
                 pass
+            
             enc = None
             if self.flag1 == 0:
                 result = self.oui(frame.addr2)
                 print "********************    OUI ", result
                 self.flag1 = 1
 
-                
                 ## direcly from Airoscapy
                 capability = frame.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}\
                 {Dot11ProbeResp:%Dot11ProbeResp.cap%}")
-                
-                if re.search("privacy", capability): enc = True
-                else: enc  = False
-                
-            if not self.accesspoint["encrypted"] == enc and enc != None:
-                print "the encrpytion has changed"
-            
+                # Check for encrypted networks
+                if re.search("privacy", capability):
+                    enc = True
+                else:
+                    enc = False
+                if not self.accesspoint["encrypted"] == enc:
+                    print "the encrpytion has changed"
+                    logger.error("the encrpytion has changed for " + frame.info)
               
             try:
                 if frame.info == self.SSID or self.BSSID.lower() == frame.addr2:
@@ -148,7 +158,7 @@ class scanning:
                         print "error", e
             except:
                 pass
-        sniff(iface=self.intf, count = self.count, prn=PacketHandler)
+        sniff(iface=self.intf, count = self.count, prn=PacketHandler, store=0)
     
     
 # lyre
@@ -158,7 +168,32 @@ class scanning:
 
 
 if __name__ == '__main__':
-    interface = str(raw_input("Choose iface: "))
+    choice = str(raw_input("Do you Wish to Scan for KARMA access points y/n"))
+    if choice == "y" or choice == "Y":  
+        k = karmaid()
+        val = k.fakeSSID()
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+        print "karma", val, "detected"
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+    else:
+        pass
+
+    choice = str(raw_input("Do you Wish to Scan for Airbase-NG Access Points y/n \n"))
+    if choice == "y" or choice == "Y":
+        #targetSSID , ifaceno, switch, amount
+        Clock = ClockSkew("Zoom", "wlan4", 1 , 300)
+        Clock.mode(1)
+        val  = Clock.clock_skew()
+        print val
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+        print 
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+    else:
+        pass    
+
+
+    print ""   
+    interface = str(raw_input("Choose Interface for monitor: "))
     os.system("sudo ifconfig %s down" %  interface)
     os.system("sudo iwconfig "+  interface + " mode managed")
     os.system("sudo ifconfig %s up" %  interface )

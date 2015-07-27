@@ -12,6 +12,7 @@ import math
 import threading
 from wifi import Cell, Scheme
 from tinydb import TinyDB, where
+from iw_karma_detect import *
 
 '''
 working very very slowly
@@ -153,6 +154,18 @@ class scanning:
 
 
 if __name__ == '__main__':
+    choice = str(raw_input("Do you Wish to Scan for KARMA access points y/n"))
+    if choice == "y" or choice == "Y":  
+        k = karmaid()
+        val = k.fakeSSID()
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+        print "karma", val, "detected"
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+    else:
+        pass
+
+
+    print ""
     interface = str(raw_input("Choose iface: "))
     os.system("sudo ifconfig %s down" %  interface)
     os.system("sudo iwconfig "+  interface + " mode managed")
