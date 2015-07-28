@@ -24,6 +24,10 @@ from clock_skew_main1 import *
 from subprocess import check_output
 from decimal import *
 from test_channel_change import *
+from termcolor import colored
+from binascii import *
+#https://github.com/ivanlei/airodump-iv/blob/master/airoiv/scapy_ex.py
+#import scapy_ex
 
 '''
 working very very slowly
@@ -125,6 +129,18 @@ class scanning:
             except:
                 pass
          
+            
+            
+            #operating_channel = frame.notdecoded
+            #data = frame.notdecoded[12:13]
+            #binascii.hexlify(data)
+            #int(ord(binascii.hexlify(data)),16)
+
+            
+            
+            
+            
+            
             
             enc = None
             if self.flag1 == 0:
@@ -247,18 +263,19 @@ if __name__ == '__main__':
         clock = ClockSkew(target["ssid"])
         clock.overlordfuntion()
         clock.rmse_function()
-        time.sleep(0.2)
+        time.sleep(1)
         f = open('rmse.txt','r')
         val3 = f.read()
         f.close()
 
-        if Decimal(val3) > 299:     
+
+        if Decimal(val3) > Decimal(299):     
            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
            print "Possible AIRBASE-NG Software Based Access Point"
            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
-    else:
-          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-          print "<<<<<<<<<<<<          Normal <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+        else:
+          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          print "<<<<<<<<<<<<          Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 
     print ""
@@ -328,9 +345,9 @@ if __name__ == '__main__':
     while True:
         for ap in db.all():
                 try:
-                    print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+                    print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
                     print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
-                    print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+                    print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
                     s = scanning(intf="wlan4", count = 300, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap)
                     s.set_ch(ap["channel"])
                     s.channel_change()

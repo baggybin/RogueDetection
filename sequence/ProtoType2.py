@@ -24,6 +24,11 @@ from clock_skew_main1 import *
 from subprocess import check_output
 from decimal import *
 from test_channel_change import *
+from termcolor import colored
+from binascii import *
+import scapy_ex
+#https://github.com/ivanlei/airodump-iv/blob/master/airoiv/scapy_ex.py
+#import scapy_ex
 
 '''
 working very very slowly
@@ -49,6 +54,7 @@ class scanning:
         self.count = count
         self.accessPointsSQ = []
         self.seq_list = []
+        self.time_seq = []
     
     
     def channel_change(self):
@@ -79,7 +85,6 @@ class scanning:
 
     def checkTheSeq(self, li):
         start=int(li[0])
-        print start,"Sequence"
         for e in li[1:]:
             a=int(e)
             if a > start:
@@ -94,86 +99,128 @@ class scanning:
         p = manuf.MacParser()
         test = p.get_all(frame.lower())
         if test.manuf is not None:
-            print "Real OUI Code"
+            print colored("Real Manufacture OUI Code", "yellow")
             result = True
         return result
     
        
     def sniffAP(self):
         print "------------------Started-----------------------------------------------"
-        def PacketHandler(frame):      
-          if  frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8:
+        def PacketHandler(frame):
+          try:     ##crosstalk with out filtering .info
+            if  frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8 and frame.info == self.accesspoint["ssid"]:           
+              #try:
+              #   extra = frame.notdecoded
+              #except:
+              #   extra = None
+              #if extra!=None:
+              #   #signal_strength = -(256-ord(extra[-4:-3]))
+              #   #signal_strength = -(256-ord(extra[14:15]))
+              #   signal_strength = frame.dBm_AntSignal
+              #else:
+              #   signal_strength = -100
+              #   print "No signal strength found"              
+              #### not much use as scanning the one channel
+              #try:
+              #    val = self.datab.search((where('ssid') == str(frame.info)))
+              #    #print "$$$$$$$$$$$$$$$$$$$    VAL    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+              #    #print val, frame.info
+              #    ch = int(ord(frame[Dot11Elt:3].info))
+              #    if not ch == val["channel"]:
+              #        print "Channel Has changed"
+              #except:
+              #    pass    
+              if not frame.Channel == self.accesspoint["channel"]:
+                  print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "pink")
+                  print "Channel Has been Changed"
+                  print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "pink")                
+                  
               
-            try:
-               extra = frame.notdecoded
-            except:
-               extra = None
-            if extra!=None:
-               signal_strength = -(256-ord(extra[-4:-3]))
-               print signal_strength
-            else:
-               signal_strength = -100
-               print "No signal strength found" 
-        
-             
-            ### not much use as scanning the one channel
-            try:
-                val = self.datab.search((where('ssid') == str(frame.info)))
-                #print "$$$$$$$$$$$$$$$$$$$    VAL    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
-                #print val, frame.info
-                ch = int(ord(frame[Dot11Elt:3].info))
-                if not ch == val["channel"]:
-                    print "Channel Has changed"
-                
-            except:
-                pass
-            
-            enc = None
-            if self.flag1 == 0:
-                result = self.oui(frame.addr2)
-                print "********************    OUI ", result
-                self.flag1 = 1
-
-                ## direcly from Airoscapy
-                capability = frame.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}\
-                {Dot11ProbeResp:%Dot11ProbeResp.cap%}")
-                # Check for encrypted networks
-                if re.search("privacy", capability):
-                    enc = True
-                else:
-                    enc = False
-                if not self.accesspoint["encrypted"] == enc:
-                    print "the encrpytion has changed"
-                    logger.error("the encrpytion has changed for " + frame.info)
+              #print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "yellow")
+              signal_strength = frame.dBm_AntSignal
+              #print "Signal Strenght", signal_strength
+              #print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "yellow")
               
-            try:
-                if frame.info == self.SSID or self.BSSID.lower() == frame.addr2:
-                    try:
+              #operating_channel = frame.notdecoded
+              #data = frame.notdecoded[12:13]
+              #binascii.hexlify(data)
+              #int(ord(binascii.hexlify(data)),16)
+      
+              #operating_chan = frame.Channel
+              #print "channnel  ------     " , operating_chan
+              
+              
+              
+              
+              
+              enc = None
+              if self.flag1 == 0:
+                  result = self.oui(frame.addr2)
+                  print colored("*******************    OUI ", "blue"),result
+                  self.flag1 = 1
+  
+                  ## direcly from Airoscapy
+                  capability = frame.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}\
+                  {Dot11ProbeResp:%Dot11ProbeResp.cap%}")
+                  # Check for encrypted networks
+                  if re.search("privacy", capability):
+                      enc = True
+                  else:
+                      enc = False
+                  if not self.accesspoint["encrypted"] == enc:
+                      print "the encrpytion has changed"
+                      logger.error("the encrpytion has changed for " + frame.info)
+                      
+              #print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+              #print "timestamp ", frame.timestamp
+              #print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+                      
+              if not self.accesspoint["address"].lower() == frame.addr2:
+                  print colored("BSSID Adresss has been chnaged", "red")
+                  print colored("OR crossralk of AP oprtaing in proximity","yellow"), frame.info
+                  print frame.info
+                  print frame.addr2
+                  print self.accesspoint["address"]
+                  print self.accesspoint["address"].lower()
                 
-                        
-                        #print frame.SC
-                        self.seq1 = frame.SC
-                        self.seq_list.append(frame.SC)
-                        self.counter += 1
-                        if self.counter == 50:
-                            print "50 Sequenecec Numbers Collected"
-                            val = self.checkTheSeq(self.seq_list)
-                            print "----------------------------------------------------------------------- ", val
-                            if val == False:
-                                print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Invalid OUI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
-                            if not self.BSSID.lower() == frame.addr2:
-                                print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Adddress Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "       
-                            self.seq_list = []
-                            self.counter = 0
-                            result = self.oui(frame.addr2)
-                            print "******************** OUI ", result
-                            if result == False:
-                                print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Mac Spoof >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
-                        self.accessPointsSQ.append(frame.SC)
-                    except  Exception,e:
-                        print "error", e
-            except:
-                pass
+              try:
+                  if frame.info == self.SSID or self.BSSID.lower() == frame.addr2:
+                      try:
+                  
+                          #print frame.SC
+                          self.seq1 = frame.SC
+                          self.seq_list.append(frame.SC)
+                          self.time_seq.append(frame.timestamp)
+                          self.counter += 1
+                          if self.counter == 25:
+                              print "RSSI for ", frame.info, signal_strength 
+                              print colored("++++++++++++++++++++++ 25 Sequenecec Numbers Collected", "yellow")
+                              print colored("++++++++++++++++++++++ Analyzing +++++++++++++++++++++", "yellow")
+                              val = self.checkTheSeq(self.seq_list)
+                              print colored("++++++++++++++++++++++ Sequence","magenta"), val
+                              if val == False:
+                                  print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Invalid OUI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", "red")
+                              if not self.BSSID.lower() == frame.addr2:
+                                  print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Adddress Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", "red")       
+                              self.seq_list = []
+                              
+                              result_timestamp = self.checkTheSeq(self.time_seq)
+                              if result_timestamp == False:
+                                  print "$$$$$$$$$$$$$$$     Timestamp Sequence Change"
+                              
+                              self.counter = 0
+                              result = self.oui(frame.addr2)
+                              print colored("******************** OUI ", "red"), result
+                              if result == False:
+                                  print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Mac Spoof >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ","red")
+                          self.accessPointsSQ.append(frame.SC)
+                      except  Exception,e:
+                          print "error", e
+              except:
+                  pass
+          except Exception, e:
+            print "info element not in beacon"
+            pass      
         sniff(iface=self.intf, count = self.count, prn=PacketHandler, store=0)
     
     
@@ -235,18 +282,19 @@ if __name__ == '__main__':
         clock = ClockSkew(target["ssid"])
         clock.overlordfuntion()
         clock.rmse_function()
-        time.sleep(0.2)
+        time.sleep(1)
         f = open('rmse.txt','r')
         val3 = f.read()
         f.close()
 
-        if Decimal(val3) > 299:     
+
+        if Decimal(val3) > Decimal(299):     
            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
            print "Possible AIRBASE-NG Software Based Access Point"
            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
-    else:
-          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-          print "<<<<<<<<<<<<          Normal <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+        else:
+          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          print "<<<<<<<<<<<<          Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 
     print ""
@@ -271,7 +319,7 @@ if __name__ == '__main__':
         S.append(SSIDS)
     ## get choice from the user
     input_var = int(input("Choose: "))
-    print "-----------------------------------------"
+    print "---------------------------------------------"
     ap = S[input_var - 1]
     print ap["ssid"]
     print ap["address"]
@@ -296,7 +344,7 @@ if __name__ == '__main__':
         #else:
         #    print "This is already Stored in the database"
         if db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
-            db.insert(S[input_var - 1])
+            db.insert(ap)
         else:
             print "already Stored in the database"
         
@@ -307,28 +355,22 @@ if __name__ == '__main__':
         
     #ch = channel_hop()
     #_thread = threading.Thread(target=ch.run(debug = True, iface = "wlan4"))
-    #_thread.start()
-    
-    
-    
-    for ap in db.all():
-        while True:
-            try:
-                print ""
-                print "$$$$$$$$$$$$$$$$$$$$$$$   Sannning -----> " , ap["ssid"]
-                s = scanning(intf="wlan4", count = 300, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap)
-                s.set_ch(ap["channel"])
-                s.channel_change()
-                s.sniffAP()
-            except Exception, err:
-                print(traceback.format_exc())
-   
-   
-   
-        
-    #f = s.sniffAP()
-    #s = scanning(intf="wlan4", count = 6000, channel =ap["channel"], BSSID=ap["address"],SSID=ap["ssid"],WIFIDATA=ap, datab=db)
-    #pint 'A' * 2000
+    #_thread.start()    
+         
+    while True:
+        for ap in db.all():
+                try:
+                    print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
+                    print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
+                    print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
+                    s = scanning(intf="wlan4", count = 300, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap)
+                    s.set_ch(ap["channel"])
+                    s.channel_change()
+                    s.sniffAP()
+                except KeyboardInterrupt, err:
+                    print(traceback.format_exc())
+                    print "interupted"                                         
+                               
 
 
 
