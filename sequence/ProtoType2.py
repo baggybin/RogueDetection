@@ -49,7 +49,6 @@ class scanning:
         self.count = count
         self.accessPointsSQ = []
         self.seq_list = []
-        self.time_seq = []
     
     
     def channel_change(self):
@@ -103,17 +102,20 @@ class scanning:
     def sniffAP(self):
         print "------------------Started-----------------------------------------------"
         def PacketHandler(frame):      
-          if  frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8:           
+          if  frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8:
+              
             try:
                extra = frame.notdecoded
             except:
                extra = None
             if extra!=None:
-               #signal_strength = -(256-ord(extra[-4:-3]))
-               signal_strength = -(256-ord(extra[14:15]))
+               signal_strength = -(256-ord(extra[-4:-3]))
+               print signal_strength
             else:
                signal_strength = -100
-               print "No signal strength found"              
+               print "No signal strength found" 
+        
+             
             ### not much use as scanning the one channel
             try:
                 val = self.datab.search((where('ssid') == str(frame.info)))
@@ -122,9 +124,9 @@ class scanning:
                 ch = int(ord(frame[Dot11Elt:3].info))
                 if not ch == val["channel"]:
                     print "Channel Has changed"
+                
             except:
                 pass
-         
             
             enc = None
             if self.flag1 == 0:
@@ -143,39 +145,25 @@ class scanning:
                 if not self.accesspoint["encrypted"] == enc:
                     print "the encrpytion has changed"
                     logger.error("the encrpytion has changed for " + frame.info)
-                    
-            #print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-            #print "timestamp ", frame.timestamp
-            #print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-                    
-            if not self.accesspoint["address"].lower() == frame.addr2:
-                print "BSSID Adresss has been chnaged"
               
             try:
                 if frame.info == self.SSID or self.BSSID.lower() == frame.addr2:
                     try:
                 
+                        
                         #print frame.SC
                         self.seq1 = frame.SC
                         self.seq_list.append(frame.SC)
-                        self.time_seq.append(frame.timestamp)
                         self.counter += 1
-                        if self.counter == 25:
-                            print "RSSI for ", frame.info, signal_strength 
-                            print "++++++++++++++++++++++ 25 Sequenecec Numbers Collected"
-                            print "++++++++++++++++++++++ Analyzing +++++++++++++++++++++"
+                        if self.counter == 50:
+                            print "50 Sequenecec Numbers Collected"
                             val = self.checkTheSeq(self.seq_list)
-                            print "++++++++++++++++++++++ Sequence", val
+                            print "----------------------------------------------------------------------- ", val
                             if val == False:
                                 print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Invalid OUI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
                             if not self.BSSID.lower() == frame.addr2:
                                 print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Adddress Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "       
                             self.seq_list = []
-                            
-                            result_timestamp = self.checkTheSeq(self.time_seq)
-                            if result_timestamp == False:
-                                print "$$$$$$$$$$$$$$$     Timestamp Sequence Change"
-                            
                             self.counter = 0
                             result = self.oui(frame.addr2)
                             print "******************** OUI ", result
@@ -308,7 +296,7 @@ if __name__ == '__main__':
         #else:
         #    print "This is already Stored in the database"
         if db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
-            db.insert(ap)
+            db.insert(S[input_var - 1])
         else:
             print "already Stored in the database"
         
@@ -322,21 +310,18 @@ if __name__ == '__main__':
     #_thread.start()
     
     
-         
-         
-         
-    while True:
-        for ap in db.all():
-                try:
-                    print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-                    print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
-                    print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-                    s = scanning(intf="wlan4", count = 300, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap)
-                    s.set_ch(ap["channel"])
-                    s.channel_change()
-                    s.sniffAP()
-                except Exception, err:
-                    print(traceback.format_exc())
+    
+    for ap in db.all():
+        while True:
+            try:
+                print ""
+                print "$$$$$$$$$$$$$$$$$$$$$$$   Sannning -----> " , ap["ssid"]
+                s = scanning(intf="wlan4", count = 300, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap)
+                s.set_ch(ap["channel"])
+                s.channel_change()
+                s.sniffAP()
+            except Exception, err:
+                print(traceback.format_exc())
    
    
    
