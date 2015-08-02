@@ -43,6 +43,123 @@ same AP ESSID with different BSSID
 OUI
 
 '''
+
+# Method to return current system time
+def t():
+    return "[" + time.strftime("%H:%M:%S") + "] "
+
+
+class mode_choice(wx.Frame):
+    def __init__(self):
+        """Constructor"""
+        #set up a client instance
+        #it will go though the protocol setup with the server
+        self.m  = modes()
+
+        #THE InterProcess Thread - The Main READING THREAD for the chat Client
+        #Messages are passed through here
+        #Checks for "Custom Commands" are also performed
+        wx.Frame.__init__(self, None, -1, "Chat Room")
+        panel = wx.Panel(self)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # Create a messages display box
+        self.text_send = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_LEFT | wx.BORDER_NONE | wx.TE_READONLY)
+        self.ctrl = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER, size=(300, 25))
+        self.sendFile_Btn = wx.Button(self, 1, 'Button')
+
+        #Also make a shallow copy of the AES Object
+        #to stop of possible simultaneous access issues
+        #and saves having to set it up again
+        #newAes = copy.copy(self.client.a)
+        #self.IPC = IPC_Read(self.client, self.text_send , self.ctrl, self, newAes, self.Shared_Mem_Dictionary)
+        #create a new READING THREAD with a NEW SOSCKET to bind to
+       	#self.newSocketRead = None#P2P_READ()
+	'''
+	loop = True
+	while loop:
+        input_var = int(input("1: Scan for Karma Access Points \n2: Scan a target to determine Airbase-NG \n3: Enter Whitelist AP \n4: Start Wireless IDS \n5: System Exit \n:>"))
+        if input_var < 0 and input_var > 4:
+            pass
+        elif input_var == 1:
+            result = m.KARMA_PROBE()
+        elif input_var == 2:
+            airbaseNG_Detection()
+        elif input_var == 3:
+            m.white_listing()
+        elif input_var == 4:
+            #Rouge_IDS()
+            db = m.get_db()
+            Rouge_IDS = Rouge_IDS_Background(db)
+            Rouge_IDS.start() 
+        elif input_var == 5:
+            sys.exit(0)
+
+	'''
+
+
+        # add port entry box
+        self.port = wx.StaticText(self, label="Enter a Port: ")
+        self.portText = wx.TextCtrl(self, value="")
+
+        self.rsa_radio = wx.RadioButton(self, label="RSA", style = wx.RB_GROUP)
+        self.aes_radio = wx.RadioButton(self, label="AES")
+        btn = wx.Button(self, label="Set File Transfer Mode")
+        sizer.Add(self.text_send, 5, wx.EXPAND)
+        sizer.Add(self.ctrl, 0, wx.EXPAND)
+        sizer.Add(self.sendFile_Btn, 0, wx.EXPAND)
+       # sizer.Add(self.choose_file, 0, wx.EXPAND)
+        sizer.Add(self.rsa_radio, 0, wx.EXPAND)
+        sizer.Add(self.aes_radio, 0, wx.EXPAND)
+        sizer.Add(self.port, 0, wx.EXPAND)
+        sizer.Add(self.portText, 0, wx.EXPAND)
+        sizer.Add(btn, 0, wx.EXPAND)
+
+        self.SetSizer(sizer)
+        self.sendFile_Btn.Bind(wx.EVT_BUTTON, self.m.white_listing)
+        btn.Bind(wx.EVT_BUTTON, self.onSet)
+
+    # starts a file transmission from GUI
+    def sendFile(self, event):
+        """ Send File to Client """
+
+    def onSet(self,event):
+        #change transfer mode
+        if self.rsa_radio.GetValue():
+            self.fileTransferEncryption = 2
+            dat ="<Entering RSA MODE>"
+            self.standard_send_to(dat)
+        if self.aes_radio.GetValue():
+            dat ="<Entering AES MODE>"
+            self.standard_send_to(dat)
+            self.fileTransferEncryption = 1
+
+	    
+class MainPanel(wx.Panel):
+    def __init__(self, parent):
+        """Constructor"""
+        wx.Panel.__init__(self, parent=parent)
+        self.frame = parent
+        m = modes()
+        # Add a button to join the chatroom
+        self.chat_room_button = wx.Button(self, -1, label="mode_choice")
+        self.chat_room_button.Bind(wx.EVT_BUTTON, self.mode_choice)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.chat_room_button, 0, wx.ALL|wx.CENTER, 5)
+        self.SetSizer(sizer)
+
+    def mode_choice(self, event):
+        """ Opens the chat room frame """
+        self.frame.Hide()
+        m = mode_choice()
+        m.Show()
+
+class MainFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, None, -1, "Mode Choice")
+        panel = MainPanel(self)
+
+
 class scanning:
     """Class for a user of the chat client."""
     def __init__(self, intf, count, channel,BSSID, SSID, accesspoint, database):
@@ -214,7 +331,6 @@ class scanning:
                   if not self.accesspoint["encrypted"] == enc:
                       print colored("the encrpytion has changed", "red")
                       logger.error("the encrpytion has changed for " + frame.info)
-                     
                     
                       
                       #Android randomises mac
@@ -291,17 +407,17 @@ class modes:
         return self.db
         
     def KARMA_PROBE(self):
-        k = karmaid()
-        val = k.fakeSSID()
-        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-        print "karma", val["count"], "detected"
-        print "BSSID ", val["result"], "same"
-        print "BSSID", val["BSSID"]
-        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+        choice = str(raw_input("Do you Wish to Scan for KARMA access points y/n"))
+        if choice == "y" or choice == "Y":  
+            k = karmaid()
+            val = k.fakeSSID()
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+            print "karma", val, "detected"
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+        else:
+            pass
     
-    
-    def airbaseNG(self):
-        self.managed()
+    def airbaseNG_Detection(self):
         choice = str(raw_input("Do you Wish to Scan for Airbase-NG Access Points y/n \n"))
         if choice == "y" or choice == "Y":
             managed()
@@ -341,7 +457,7 @@ class modes:
               print "<<<<<<<<<<<<          Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
               print ""    
     
-    def white_listing(self):
+    def white_listing(self, event):
         interface = str(raw_input("Choose Interface for monitor: "))
         os.system("sudo ifconfig %s down" %  interface)
         os.system("sudo iwconfig "+  interface + " mode managed")
@@ -389,7 +505,7 @@ class modes:
             #print all database
             print self.db.all()
     
-    def chann_change(self, channel):
+    def chann_change(channel):
         os.system("sudo ifconfig %s down" % "wlan4" )
         os.system("sudo iw dev "+ "wlan4" + " set type monitor")
         os.system("sudo ifconfig %s up" %  "wlan4")
@@ -400,18 +516,17 @@ class modes:
         except Exception, err :
                print err
                
-    def managed(self):
+    def managed():
         os.system("sudo ifconfig %s down" % "wlan4" )
-        os.system("sudo iwconfig wlan4 essid off")
         os.system("sudo iw dev "+ "wlan4" + " set type managed")
         os.system("sudo ifconfig %s up" %  "wlan4")
         
-    def purge_db(self):
+    def purge_db():
         self.db.purge()
         return True
     
     
-    def Rouge_IDS(self):
+    def Rouge_IDS():
         loop = True
         while loop:
             flag = 0
@@ -420,7 +535,8 @@ class modes:
                         print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
                         print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
                         print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
-                        s = scanning(intf="wlan4", count = 100, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap, database=self.db)                      
+                        s = scanning(intf="wlan4", count = 100, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap, database=self.db)
+                       
                        
                         if flag == 1:
                             for i in xrange(1, 3):
@@ -447,11 +563,14 @@ class modes:
             loop = False
  
  
- 
- 
-from subprocess import *       
+       
 def main():
     m = modes()
+    app = wx.App(False)
+    frame = MainFrame()
+    frame.Show()
+    app.MainLoop()
+
     loop = True
     while loop:
         input_var = int(input("1: Scan for Karma Access Points \n2: Scan a target to determine Airbase-NG \n3: Enter Whitelist AP \n4: Start Wireless IDS \n5: System Exit \n:>"))
@@ -460,14 +579,13 @@ def main():
         elif input_var == 1:
             result = m.KARMA_PROBE()
         elif input_var == 2:
-            val = m.airbaseNG()
+            airbaseNG_Detection()
         elif input_var == 3:
             m.white_listing()
         elif input_var == 4:
             #Rouge_IDS()
             db = m.get_db()
-            Rouge_IDS = Rouge_IDS_Background(db, False)
-            #subprocess.Popen([sys.executable, Rouge_IDS.start], shell = True)
+            Rouge_IDS = Rouge_IDS_Background(db)
             Rouge_IDS.start() 
         elif input_var == 5:
             sys.exit(0)
@@ -475,9 +593,9 @@ def main():
 
 
 class Rouge_IDS_Background(threading.Thread):
-    def __init__(self, db , daemon):
+    def __init__(self, db):
         threading.Thread.__init__(self)
-        self.daemon = daemon
+        self.daemon = True
         self.db = db
 
     def run(self):
@@ -524,18 +642,152 @@ if __name__ == '__main__':
     from tinydb import TinyDB, where
     main()
     
-
-
     
-class logging:
-    def __init__(self):
-        self.nothing = None
+    #choice = str(raw_input("Do you Wish to Scan for KARMA access points y/n"))
+    #if choice == "y" or choice == "Y":  
+    #    k = karmaid()
+    #    val = k.fakeSSID()
+    #    print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    #    print "karma", val, "detected"
+    #    print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+    #else:
+    #    pass
+    #
+    #choice = str(raw_input("Do you Wish to Scan for Airbase-NG Access Points y/n \n"))
+    #if choice == "y" or choice == "Y":
+    #    managed()
+    #    ce = Cell.all("wlan4")
+    #    s = []
+    #    count = 0
+    #    for c in ce:
+    #        count += 1
+    #        print ":"+ str(count), " ssid:", c.ssid
+    #            #create dictionary with informnation on the accesss point
+    #        SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+    #                    "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+    #            #append this dictionary to a list
+    #        s.append(SSIDS)        
+    #    
+    #    input_var = int(input("Choose: "))
+    #    print "-----------------------------------------"
+    #    target = s[input_var - 1]
+    #    
+    #    chann_change(target["channel"])
+    #    #targetSSID , ifaceno, switch, amount
+    #    clock = ClockSkew(target["ssid"])
+    #    clock.overlordfuntion()
+    #    clock.rmse_function()
+    #    time.sleep(1)
+    #    f = open('rmse.txt','r')
+    #    val3 = f.read()
+    #    f.close()
+    #
+    #
+    #    if Decimal(val3) > Decimal(299):     
+    #       print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    #       print "Possible AIRBASE-NG Software Based Access Point"
+    #       print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+    #    else:
+    #      print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    #      print "<<<<<<<<<<<<          Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    #      print ""
+    
+    
+    #interface = str(raw_input("Choose Interface for monitor: "))
+    #os.system("sudo ifconfig %s down" %  interface)
+    #os.system("sudo iwconfig "+  interface + " mode managed")
+    #os.system("sudo ifconfig %s up" %  interface )
+    #cell = Cell.all(interface)
+    #db = TinyDB('db.json')
+    ##db.purge()
+    #Auth_AP = {}
+    #S = []
+    ##have a counter for user choice input
+    #count = 0
+    #for c in cell:
+    #    count += 1
+    #    print ":"+ str(count), " ssid:", c.ssid
+    #        #create dictionary with informnation on the accesss point
+    #    SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+    #                "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+    #        #append this dictionary to a list
+    #    S.append(SSIDS)
+    ### get choice from the user
+    #input_var = int(input("Choose: "))
+    #print "---------------------------------------------"
+    #ap = S[input_var - 1]
+    #print ap["ssid"]
+    #print ap["address"]
+    #print ap["encrypted"]
+    #print ap["channel"]
+    #print "---------------------------------------------"
+    #
+    #loop = True
+    #while loop:
+    #    try:
+    #        input_var = int(input("1: Store Valid AP \n2: Disregard and Continue\n:"))     
+    #        if input_var > 0 and input_var <= 2:
+    #            loop = False
+    #    except ValueError:
+    #        pass
+    #
+    #if input_var == 1:
+    #    #db.purge()
+    #    #db.insert(S[input_var - 1])
+    #    #if db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
+    #    #    db.insert(ap)
+    #    #else:
+    #    #    print "This is already Stored in the database"
+    #    if db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
+    #        db.insert(ap)
+    #    else:
+    #        print "already Stored in the database"
+    #    
+    #    '''
+    #    print all database
+    #    '''
+    #    print db.all()
+        
+    #ch = channel_hop()
+    #_thread = threading.Thread(target=ch.run(debug = True, iface = "wlan4"))
+    #_thread.start()
+    
+    
 
-    def detected(pattern,msg):
-            foo=open("DETECTIONS.LOG","a")
-            logthis=str(datetime.datetime.today())+" | "+str(pattern)+" | "+str(msg)+"\n"
-            foo.write(logthis)
-            foo.close()
+    #loop = True
+    #while loop:
+    #    flag = 0
+    #    for ap in db.all():
+    #            try:
+    #                print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
+    #                print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
+    #                print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
+    #                s = scanning(intf="wlan4", count = 100, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap, database=db)
+    #               
+    #               
+    #                if flag == 1:
+    #                    for i in xrange(1, 3):
+    #                        ch = random.randrange(1,11)
+    #                        s.set_ch(ch)
+    #                        s.ch_hop(ch, ap["ssid"])
+    #                        s.sniffAP()
+    #                        if i == 2:
+    #                            flag = 0
+    #                 
+    #                if flag == 0:
+    #                    s.set_ch(ap["channel"])
+    #                    s.channel_change(ap["ssid"])
+    #                    flag = 1                   
+    #                
+    #                s.sniffAP()
+    #                
+    #                if s.check_rm() == 1:
+    #                    db.remove(where("ssid") == ap["ssid"])
+    #                  
+    #            except KeyboardInterrupt, err:
+    #                print(traceback.format_exc())
+    #                print "interupted"                                         
+    #    loop = False                      
 
 
 

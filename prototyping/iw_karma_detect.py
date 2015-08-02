@@ -39,11 +39,14 @@ class karmaid:
             amd in this instamce( karma will rely and ususaly assosoiate)
             '''
             os.system("sudo ifconfig wlan4 down" )
+            time.sleep(1)
             os.system("iwconfig wlan4 essid " + fakeSSID )
             os.system("ifconfig wlan4 up")
-            time.sleep(20)
+            # requires at least 20 seconds to assosiate
+            time.sleep(25)
             
-            
+            if self.range == 2 and self.count == 0:
+                time.sleep(10)
             '''
             Next Step try capture an assosiation from IWCONFIG with Fake SSid
             Thsi will Eliminate any to capture thge reponces
@@ -90,7 +93,7 @@ class karmaid:
         os.system("service network-manager start")
         os.system("dhclient")
         
-        return self.count
+        return {"count":self.count,"result":result,"BSSID":self.KARMAAP}
 
 ##main script start
 if __name__ == '__main__':
