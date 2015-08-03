@@ -90,6 +90,14 @@ class karmaid:
         print  "Same KARMA Acccess Point in all instanaces " + str(result)
         print "\n\n"
         print "Restarting Services"
+        
+        
+        os.system("sudo ifconfig wlan4 down" )
+        os.system("sudo iwconfig wlan4 essid off")
+        os.system("ifconfig wlan4 up")
+
+        
+        
         os.system("service network-manager start")
         os.system("dhclient")
         

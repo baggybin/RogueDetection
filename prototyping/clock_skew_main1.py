@@ -180,4 +180,4 @@ class ClockSkew:
 	    return self.rsme		    
 	
     def overlordfuntion(self):
-	sniff(iface=self.ifaceno, prn = self.Handler, count = 500)
+	sniff(iface=self.ifaceno, prn = self.Handler, count = 300, lfilter = lambda x:(x.haslayer(Dot11Beacon) or x.haslayer(Dot11ProbeResp)))

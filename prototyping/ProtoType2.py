@@ -151,6 +151,10 @@ class scanning:
         print "------------------Started-----------------------------------------------"
         def PacketHandler(frame):
           try:     ##crosstalk with out filtering .info
+            
+            essid = pckt[Dot11Elt].info if '\x00' not in pckt[Dot11Elt].info and pckt[Dot11Elt].info != '' else 'Hidden SSID'
+            print "Hidden Test", essid
+            
             if frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8 and not frame.info == self.accesspoint["ssid"]:
                 self.appearanceCounter +=1
                 if self.appearanceCounter > 5:
@@ -297,49 +301,199 @@ class modes:
         print "karma", val["count"], "detected"
         print "BSSID ", val["result"], "same"
         print "BSSID", val["BSSID"]
-        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+        
+    def airbaseNG_manual(self):
+        m_channnel = int(input("Enter Channel: "))
+        print "-----------------------------------------"
+        m_ssid = str(raw_input("Enter SSID: "))
+        print "-----------------------------------------"
     
+        chann_change(m_channnel)
+
+        clock = ClockSkew(str(m_ssid))
+        clock.overlordfuntion()
+        value = clock.rmse_function()
+        time.sleep(1)
+        f = open('rmse.txt','r')
+        val3 = f.read()
+        f.close()
+        
+        #'print "value", value
+        if Decimal(val3) > Decimal(299):     
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
+           print colored("Possible AIRBASE-NG Software Based Access Point","red")
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")    
+        else:
+          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
+          print ""    
+    
+    
+    
+    def airbaseNG_secondAttempt(self):
+       import subprocess 
+       import re 
+       self.managed() 
+       proc = subprocess.Popen('iwlist wlan4 scan', shell=True, stdout=subprocess.PIPE, ) 
+       stdout_str = proc.communicate()[0] 
+       stdout_list=stdout_str.split('\n') 
+       essid=[] 
+       address=[]
+       channel=[]
+       for line in stdout_list: 
+            line=line.strip() 
+            match=re.search('ESSID:"(\S+)"',line) 
+            if match: 
+                essid.append(match.group(1)) 
+            match=re.search('Address: (\S+)',line) 
+            if match: 
+                address.append(match.group(1))
+                
+            match = re.search('Channel:([0-9]+)',line)
+            if match:
+                channel.append(match.group(1))
+                
+       print essid 
+       print address
+       print channel
+       
+       count = 0
+       for s in essid:
+            print s , count 
+            count +=1
+       
+       c = int(input("Enter Choice: "))
+       print "-----------------------------------------"
+
+    
+       chann_change(channel[c])
+
+       clock = ClockSkew(str(essid[c]))
+       clock.overlordfuntion()
+       value = clock.rmse_function()
+       time.sleep(1)
+       f = open('rmse.txt','r')
+       val3 = f.read()
+       f.close()
+        
+        #'print "value", value
+       if Decimal(val3) > Decimal(299):     
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
+           print colored("Possible AIRBASE-NG Software Based Access Point","red")
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")    
+       else:
+          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
+          print "" 
+       
+       
+       
+
     
     def airbaseNG(self):
         self.managed()
-        choice = str(raw_input("Do you Wish to Scan for Airbase-NG Access Points y/n \n"))
-        if choice == "y" or choice == "Y":
-            managed()
-            ce = Cell.all("wlan4")
-            s = []
-            count = 0
-            for c in ce:
-                count += 1
-                print ":"+ str(count), " ssid:", c.ssid
-                    #create dictionary with informnation on the accesss point
-                SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
-                            "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
-                    #append this dictionary to a list
-                s.append(SSIDS)        
-            
-            input_var = int(input("Choose: "))
-            print "-----------------------------------------"
-            target = s[input_var - 1]
-            
-            chann_change(target["channel"])
-            #targetSSID , ifaceno, switch, amount
+        ce = Cell.all("wlan4")
+        s = []
+        count = 0
+        
+        
+        #
+        proc = subprocess.Popen('iwlist wlan4 scan', shell=True, stdout=subprocess.PIPE, ) 
+        stdout_str = proc.communicate()[0] 
+        stdout_list=stdout_str.split('\n') 
+        essid=[] 
+        address=[]
+        for line in stdout_list: 
+            line=line.strip() 
+            match=re.search('ESSID:"(\S+)"',line) 
+            if match: 
+                essid.append(match.group(1)) 
+            match=re.search('Address: (\S+)',line) 
+            if match: 
+                address.append(match.group(1))                
+        # temp fix
+        pos = 0
+        missing = ""
+        place = 0
+        for c in ce:
+            if c.ssid == "":
+                if essid[pos] not in ce:
+                    print colored("!!!!!!!!!Airbase-NG error Sending empty SSID simultaneously!!!!!!!!! SSID\n", "red")
+                    print colored("!!!!!!!!!missing!!!!!!!!! SSID\n", "red"), essid[pos], "count ", pos , "\n"
+                    print colored("!!!!!!!!!Substition for Null ssid may work\n", "yellow")
+                    missing = essid[pos]
+                    place = pos
+                    break
+            pos += 1
+        
+        print essid
+        #
+        #
+        #
+        #
+        #
+        #for c in ce:
+        #    count += 1    
+        #    if flag_missing == True:
+        #        if place +1 == count:
+        #            print ":"+ str(count), " ssid:", essid[place+1]
+        #        else:
+        #            print ":"+ str(count), " ssid:", c.ssid
+        #            #create dictionary with informnation on the accesss point
+        #        SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+        #                    "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+        #            #append this dictionary to a list
+        #        s.append(SSIDS)        
+        #    else:
+        #        print ":"+ str(count), " ssid:", c.ssid
+        #            #create dictionary with informnation on the accesss point
+        #        SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+        #                    "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+        #            #append this dictionary to a list
+        #        s.append(SSIDS)
+                
+        for c in ce:
+            count += 1    
+            print ":"+ str(count), " ssid:", c.ssid
+                #create dictionary with informnation on the accesss point
+            SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+                        "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+                #append this dictionary to a list
+            s.append(SSIDS)
+                        
+                
+        input_var = int(input("Choose: "))
+        print "-----------------------------------------"
+        target = s[input_var - 1]
+        
+        
+        
+        chann_change(target["channel"])
+        #targetSSID , ifaceno, switch, amount
+        
+        if target["ssid"] == "":
+            clock = ClockSkew(missing)
+        else:
             clock = ClockSkew(target["ssid"])
-            clock.overlordfuntion()
-            clock.rmse_function()
-            time.sleep(1)
-            f = open('rmse.txt','r')
-            val3 = f.read()
-            f.close()
+            
+        clock.overlordfuntion()
+        value = clock.rmse_function()
+        time.sleep(1)
+        f = open('rmse.txt','r')
+        val3 = f.read()
+        f.close()
+        
+        #'print "value", value
+        if Decimal(val3) > Decimal(299):     
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
+           print colored("Possible AIRBASE-NG Software Based Access Point","red")
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")    
+        else:
+          print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
+          print ""    
     
-    
-            if Decimal(val3) > Decimal(299):     
-               print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-               print "Possible AIRBASE-NG Software Based Access Point"
-               print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"     
-            else:
-              print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-              print "<<<<<<<<<<<<          Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-              print ""    
     
     def white_listing(self):
         interface = str(raw_input("Choose Interface for monitor: "))
@@ -402,7 +556,6 @@ class modes:
                
     def managed(self):
         os.system("sudo ifconfig %s down" % "wlan4" )
-        os.system("sudo iwconfig wlan4 essid off")
         os.system("sudo iw dev "+ "wlan4" + " set type managed")
         os.system("sudo ifconfig %s up" %  "wlan4")
         
@@ -454,22 +607,26 @@ def main():
     m = modes()
     loop = True
     while loop:
-        input_var = int(input("1: Scan for Karma Access Points \n2: Scan a target to determine Airbase-NG \n3: Enter Whitelist AP \n4: Start Wireless IDS \n5: System Exit \n:>"))
-        if input_var < 0 and input_var > 4:
+        input_var = int(input(colored("1: Scan for Karma Access Points \n2: Scan a target to determine Airbase-NG \n3: Manually Scan a target to determine Airbase-NG  \n4: Try other attempt Airbase-NG  \n5: Enter Whitelist AP \n6: Start Wireless IDS \n7: System Exit \n:>", "yellow")))
+        if input_var < 0 and input_var >7:
             pass
         elif input_var == 1:
             result = m.KARMA_PROBE()
         elif input_var == 2:
             val = m.airbaseNG()
         elif input_var == 3:
-            m.white_listing()
+            val = m.airbaseNG_manual()
         elif input_var == 4:
+            val = m.airbaseNG_secondAttempt()             
+        elif input_var == 5:
+            m.white_listing()
+        elif input_var == 6:
             #Rouge_IDS()
             db = m.get_db()
             Rouge_IDS = Rouge_IDS_Background(db, False)
             #subprocess.Popen([sys.executable, Rouge_IDS.start], shell = True)
             Rouge_IDS.start() 
-        elif input_var == 5:
+        elif input_var == 7:
             sys.exit(0)
 
 
