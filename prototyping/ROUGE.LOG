@@ -1,0 +1,18 @@
+------------------------------
+STARTING CAPTURE ON 2015-08-05 20:32:04.357805
+-----------------------------------------------
+**************************************
+STARTING CAPTURE ON 2015-08-05 20:38:02.695066
+**************************************
+2015-08-05 20:38:02.695298 | KARMA Access Point Detection | aa:bb:cc:dd:ee:ff | 10 | True
+**************************************
+STARTING CAPTURE ON 2015-08-05 20:51:43.363046
+**************************************
+2015-08-05 20:51:43.363228 | 10 | KARMA Access Point Detection | aa:bb:cc:dd:ee:ff | 3 | True
+2015-08-05 20:55:58.731296 | 10 | KARMA Access Point Detection | ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] | 3 | True
+2015-08-05 21:09:46.826191 | 3 | Possible Airbase-NG Access Point Detection | F | 11
+2015-08-07 02:39:36.234738 |Severity : 10 |MESSAGE : BSSID Adresss has been chnaged from c0:4a:00:e4:b6:70 |SSID : lyre |bSSID : aa:11:22:bb:cc:33 |Channel : 1
+2015-08-07 02:39:36.486703 |Severity : 10 |MESSAGE : Sequence Numbers Irregular  |SSID : lyre |bSSID : c0:4a:00:e4:b6:70 |Channel : 1
+2015-08-07 02:39:36.487678 |Severity : 9 |MESSAGE :  Possible Evil Twin Timestamp Sequence Change c0:4a:00:e4:b6:70 |SSID : lyre |bSSID : c0:4a:00:e4:b6:70 |Channel : 1
+2015-08-07 02:39:39.046901 |Severity : 9 |MESSAGE :  Possible Evil Twin Timestamp Sequence Change c0:4a:00:e4:b6:70 |SSID : lyre |bSSID : c0:4a:00:e4:b6:70 |Channel : 1
+2015-08-07 02:39:41.607300 |Severity : 9 |MESSAGE :  Possible Evil Twin Timestamp Sequence Change c0:4a:00:e4:b6:70 |SSID : lyre |bSSID : c0:4a:00:e4:b6:70 |Channel : 1

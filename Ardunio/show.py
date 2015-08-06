@@ -28,44 +28,82 @@ class Header:
         ctx.write(empty_line + time_str)              
         ctx.bg_color(Screen.BLACK)
 
+#class Thread_Manager(threading.Thread):
+#    def __init__(self, serial,):
+#        threading.Thread.__init__(self)
+#        self.val = ""
+#        self.ser = serial
+#    #def run(self):
+#    #    #self.read()
+#    #    print "nothing"  
+#    def returnPress(self):
+#        return self.ser.readline()
+#        pass    
+#    #def read(self):
+#    #    while True:
+#    #         print ser.readline()
+#    #         self.val = ser.readline()
+
 class Thread_Manager(threading.Thread):
-    def __init__(self, serial,):
+    def __init__(self):
         threading.Thread.__init__(self)
         self.val = ""
         self.ser = serial
+        self.mess1 = "hello"
+        self.mess2 = "World!"
+        self.ser = serial.Serial("/dev/ttyUSB0", 500000, timeout=0)
+        self.ctx = ScreenContext("/dev/ttyUSB0")
+        self.ctx.sleep(6).reset_lcd().set_rotation(1)
+        self.counter = 0
+        #print "rows", ctx.get_rows(), 320/ctx.get_rows()
+        #print "columns", ctx.get_columns()
+        self.row = 21 * 2 * 8
+        print "Start LCD"
+  
+  
     #def run(self):
-    #    #self.read()
-    #    print "nothing"  
-    def returnPress(self):
-        return self.ser.readline()
-        pass    
-    #def read(self):
     #    while True:
-    #         print ser.readline()
-    #         self.val = ser.readline()
+    #        header = Header()
+    #        header.render_header(self.ctx,0,"HeaderName")
+    #        self.ctx.fg_color(Screen.RED).write(self.mess1).linebreak()
+    #        self.ctx.fg_color(Screen.RED).write(str(self.counter)).linebreak()
+    #        self.ctx.fg_color(Screen.BLUE).write(self.mess2)
+    #        #ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
+    #        self.ctx.set_cursor_pos(self.row * 3,0)
+    #        self.counter += 1
+
+    def update_screen(self):
+        self.ctx.sleep(6).reset_lcd().set_rotation(1)
+        header = Header()
+        header.render_header(self.ctx,0,"Rouge")
+        self.ctx.fg_color(Screen.RED).write(self.mess1).linebreak()
+        self.ctx.fg_color(Screen.RED).write(str(self.counter)).linebreak()
+        self.ctx.fg_color(Screen.BLUE).write(self.mess2)
+        #ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
+        self.ctx.set_cursor_pos(self.row * 3,0)
+        self.counter += 1  
+
+    def update_message(self, mess1, mess2):
+        self.mess1 = mess1
+        self.mess2 = mess2
+        return True
+        
+    
 
 
-ser = serial.Serial('/dev/ttyUSB0', 500000, timeout=0)
-ReadThread = Thread_Manager(ser)
-ReadThread.start()
-ctx = ScreenContext("/dev/ttyUSB0")
-ctx.sleep(6).reset_lcd().set_rotation(1)
-counter = 0
+t = Thread_Manager()
+t.start()
 
 
-print "rows", ctx.get_rows(), 320/ctx.get_rows()
-print "columns", ctx.get_columns()
-row = 21 * 2 * 8
 
-while True:
-    header = Header()
-    header.render_header(ctx,0,"HeaderName")
-    ctx.fg_color(Screen.RED).write("Hello").linebreak()
-    ctx.fg_color(Screen.RED).write(str(counter)).linebreak()
-    ctx.fg_color(Screen.BLUE).write("world!")
-    ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
-    ctx.set_cursor_pos(row * 3,0)
-    counter = counter + 1
+#header = Header()
+#header.render_header(ctx,0,"Rouge Hunter")
+#ctx.fg_color(Screen.RED).write("Hello").linebreak()
+#ctx.fg_color(Screen.RED).write(str(counter)).linebreak()
+#ctx.fg_color(Screen.BLUE).write("world!")
+##ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
+#ctx.set_cursor_pos(row * 3,0)
+#counter = counter + 1
 
 
 

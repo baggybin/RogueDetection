@@ -101,7 +101,10 @@ class karmaid:
         os.system("service network-manager start")
         os.system("dhclient")
         
-        return {"count":self.count,"result":result,"BSSID":self.KARMAAP}
+        if self.count > 0:
+            return {"count":self.count,"result":result,"BSSID":self.KARMAAP}
+        else:
+            return False
 
 ##main script start
 if __name__ == '__main__':

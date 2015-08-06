@@ -33,16 +33,15 @@ import scapy_ex
 import wx
 from wx.lib.pubsub import pub
 
+from custom_log_rouge import *
+
 '''
 working very very slowly
-
 same BSSID but different other attributes such as encyption, channnel
-
 same AP ESSID with different BSSID
-
 OUI
-
 '''
+
 class scanning:
     """Class for a user of the chat client."""
     def __init__(self, intf, count, channel,BSSID, SSID, accesspoint, database):
@@ -62,7 +61,7 @@ class scanning:
         self.database = database
         self.flag_remove = 0
         self.stop_sniff = False
-    
+        self.log = rougelog()
     
     def channel_change(self, ssid):
         os.system("sudo ifconfig %s down" %  self.intf )
@@ -152,13 +151,14 @@ class scanning:
         def PacketHandler(frame):
           try:     ##crosstalk with out filtering .info
             
-            essid = pckt[Dot11Elt].info if '\x00' not in pckt[Dot11Elt].info and pckt[Dot11Elt].info != '' else 'Hidden SSID'
-            print "Hidden Test", essid
+            #essid = frame[Dot11Elt].info if '\x00' not in frame[Dot11Elt].info and frame[Dot11Elt].info != '' else 'Hidden SSID'
+            #print colored("Hidden Test~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~","red"), essid
             
             if frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8 and not frame.info == self.accesspoint["ssid"]:
                 self.appearanceCounter +=1
-                if self.appearanceCounter > 5:
-                    #print "Appears to be offline"
+                if self.appearanceCounter > 15:
+                    print "Appears to be offline on this Channel"
+                    self.appearanceCounter = 0
                     #choice = str(raw_input("Remove Acccess Point y/n \n"))
                     #if choice == "y" or choice == "Y":                   
                     #    self.flag_remove = 1
@@ -191,8 +191,10 @@ class scanning:
               #    pass    
               if not frame.Channel == self.accesspoint["channel"]:
                   print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "pink")
-                  print "Channel Has been Changed"
-                  print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "pink")                
+                  print "Channel Has been Changed to another Frequency"
+                  #def channelChange(self, SSID, BSSID, Channel, level=2):
+                  self.log.channelChange(self.accesspoint["ssid"],self.accesspoint["address"],str(self.accesspoint["channel"] + " " +frame.Channel))
+                  print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")                
               signal_strength = frame.dBm_AntSignal
               #operating_channel = frame.notdecoded
               #data = frame.notdecoded[12:13]
@@ -206,7 +208,7 @@ class scanning:
                   self.flag1 = 1
                   if result == False:
                     print colored("Not a Manufactures OUI Code ", "red"),result
-                    logger.error("Not a Manufactures OUI Code " + frame.info + " BSSID " + frame.addr2 ) 
+                    self.log.Invalid_OUI(frame.info,frame.addr2,frame.Channel) 
                   ## direcly from Airoscapy
                   capability = frame.sprintf("{Dot11Beacon:%Dot11Beacon.cap%}\
                   {Dot11ProbeResp:%Dot11ProbeResp.cap%}")
@@ -217,21 +219,22 @@ class scanning:
                       enc = False
                   if not self.accesspoint["encrypted"] == enc:
                       print colored("the encrpytion has changed", "red")
-                      logger.error("the encrpytion has changed for " + frame.info)
+                      #logger.error("the encrpytion has changed for " + frame.info)
+                      self.log.general(str("Security Detials chnages to " + enc),frame.info,frame.addr2,frame.Channel, level=8)
                      
-                    
                       
-                      #Android randomises mac
-              if not self.accesspoint["address"].lower() == frame.addr2 and not frame.info =="AndroidAP":
-                  print colored("BSSID Adresss has been chnaged", "red")
-                  print colored("OR crossralk, or System that uses random MACS like Android","yellow"), frame.info
+              if not self.accesspoint["address"].lower() == frame.addr2 and( frame.info == self.accesspoint["ssid"]):
+                  print colored("BSSID Adresss has been chnaged", "red"), frame.info
+                  self.log.general(str("BSSID Adresss has been chnaged from " + self.accesspoint["address"].lower()),frame.info,frame.addr2,frame.Channel, level=10)
                   print frame.info
                   print frame.addr2
                   print self.accesspoint["address"]
                   print self.accesspoint["address"].lower()
-              
+                  
+              #Android randomises mac
               if not self.accesspoint["address"].lower() == frame.addr2 and frame.info =="AndroidAP":
                   print colored("Android Software access Point Operating", "red")
+                  self.log.general(str("Android Random Mac Change" + self.accesspoint["address"].lower()),frame.info,frame.addr2,frame.Channel, level=10)
                   print colored("OR crossralk, or System that uses random MACS like Android","yellow"), frame.info
                   print frame.info
                   print frame.addr2
@@ -242,40 +245,52 @@ class scanning:
               try:
                   if frame.info == self.SSID or self.BSSID.lower() == frame.addr2:
                       try:
+                          print frame.SC
                           self.seq1 = frame.SC
                           self.seq_list.append(frame.SC)
                           self.time_seq.append(frame.timestamp)
                           self.counter += 1
                           if self.counter == 25:
-                              print "RSSI for ", frame.info, signal_strength 
+                              print "RSSI for ", frame.info, signal_strength
+                              
+                              
                               print colored("++++++++++++++++++++++ 25 Sequenecec Numbers Collected", "yellow")
                               print colored("++++++++++++++++++++++ Analyzing +++++++++++++++++++++", "yellow")
                               val = self.checkTheSeq(self.seq_list)
                               print colored("++++++++++++++++++++++ Sequence","magenta"), val
                               if val == False:
-                                  print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Invalid OUI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", "red")
-                              if not self.BSSID.lower() == frame.addr2:
-                                  print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Adddress Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", "red")       
+                                  print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Sequenece Numbers Irregular >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", "red")
+                                  self.log.general(str("Sequence Numbers Irregular "),frame.info,frame.addr2,frame.Channel, level=10)
                               self.seq_list = []
+                              
+                              
+                              if not self.BSSID.lower() == frame.addr2:
+                                  print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Evil Twin Adddress Change >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", "red")
+                                  self.log.general(str(" Possible Evil Twin Adddress Change from " + self.BSSID.lower()),frame.info,frame.addr2,frame.Channel, level=9)
+                              
                               
                               result_timestamp = self.checkTheSeq(self.time_seq)
                               if result_timestamp == False:
-                                  print "$$$$$$$$$$$$$$$     Timestamp Sequence Change"
-                              
+                                  print colored("$$$$$$$$$$$$$$$     Timestamp Sequence Change", "red")
+                                  self.log.general(str(" Possible Evil Twin Timestamp Sequence Change " + self.BSSID.lower()),frame.info,frame.addr2,frame.Channel, level=9)
+                                  
+                                  
                               self.counter = 0
                               result = self.oui(frame.addr2)
                               print colored("******************** OUI ", "red"), result
                               if result == False:
                                   print colored("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Possible Mac Spoof >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ","red")
+                                  
                           self.accessPointsSQ.append(frame.SC)
                       except  Exception,e:
                           print "error", e
               except:
                   pass
           except Exception, e:
+                print e
                 pass
         #signal.signal(signal.SIGINT, self.stop_sniffing)
-        sniff(iface=self.intf, count = self.count, prn=PacketHandler, store=0,timeout = 10,lfilter = lambda x:(x.haslayer(Dot11Beacon) or x.haslayer(Dot11ProbeResp)), stop_filter=self.keep_sniffing )
+        sniff(iface=self.intf, count = self.count, prn=PacketHandler, store=0,timeout = 10,lfilter = lambda x:(x.haslayer(Dot11Beacon)))#, stop_filter=self.keep_sniffing )
 
     
 # lyre
@@ -290,6 +305,50 @@ class modes:
         self.karmaDetecetection = {}
         self.airbaseNG_Detection = {}
         self.db = TinyDB('db.json')
+        self.log = rougelog()
+        
+        
+        
+    def start_ap(self, mon_iface, channel, essid, args):
+        print " Starting the fake access point..."
+        config = (
+        'interface=%s\n'
+        'driver=nl80211\n'
+        'ssid=%s\n'
+        'hw_mode=g\n'
+        'channel=%s\n'
+        'macaddr_acl=0\n'
+        'ignore_broadcast_ssid=0\n'
+         )
+        with open('/tmp/hostapd.conf', 'w') as dhcpconf:
+            dhcpconf.write(config % (mon_iface, essid, channel))
+        from subprocess import Popen, PIPE, check_output
+        DN = open(os.devnull, 'w')
+        Popen(['hostapd', '/tmp/hostapd.conf'], stdout=DN, stderr=DN)
+        try:
+            time.sleep(6)  # Copied from Pwnstar which said it was necessary?
+        except KeyboardInterrupt:
+            cleanup(None, None)
+            
+            
+    def dhcp_conf(self, interface):
+     config = (
+         # disables dnsmasq reading any other files like
+         # /etc/resolv.conf for nameservers
+         'no-resolv\n'
+         # Interface to bind to
+         'interface=%s\n'
+         # Specify starting_range,end_range,lease_time
+         'dhcp-range=%s\n'
+         'address=/#/10.0.0.1'
+        )    
+     with open('/tmp/dhcpd.conf', 'w') as dhcpconf:
+             # subnet, range, router, dns
+        dhcpconf.write(config % (interface, '10.0.0.2,10.0.0.100,12h'))
+     return '/tmp/dhcpd.conf' 
+     
+    
+    
     
     def get_db(self):
         return self.db
@@ -297,12 +356,22 @@ class modes:
     def KARMA_PROBE(self):
         k = karmaid()
         val = k.fakeSSID()
-        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-        print "karma", val["count"], "detected"
-        print "BSSID ", val["result"], "same"
-        print "BSSID", val["BSSID"]
-        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
         
+        if not val == False:
+            #return {"count":self.count,"result":result,"BSSID":self.KARMAAP}
+            self.log.detectedkarma(val["BSSID"],val["count"],val["result"],10)
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+            print "karma", val["count"], "detected"
+            print "BSSID ", val["result"], "same"
+            print "BSSID", val["BSSID"]
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+        else:
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+            print "karma not detected"           
+            print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+            
+            
+            
     def airbaseNG_manual(self):
         m_channnel = int(input("Enter Channel: "))
         print "-----------------------------------------"
@@ -323,7 +392,8 @@ class modes:
         if Decimal(val3) > Decimal(299):     
            print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
            print colored("Possible AIRBASE-NG Software Based Access Point","red")
-           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")    
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
+           self.log.detectedAIRBASE(m_ssid,m_channnel)
         else:
           print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
           print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
@@ -381,7 +451,8 @@ class modes:
        if Decimal(val3) > Decimal(299):     
            print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
            print colored("Possible AIRBASE-NG Software Based Access Point","red")
-           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")    
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
+           self.log.detectedAIRBASE(str(essid[c]),channel[c] )
        else:
           print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
           print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
@@ -397,8 +468,6 @@ class modes:
         s = []
         count = 0
         
-        
-        #
         proc = subprocess.Popen('iwlist wlan4 scan', shell=True, stdout=subprocess.PIPE, ) 
         stdout_str = proc.communicate()[0] 
         stdout_list=stdout_str.split('\n') 
@@ -428,10 +497,6 @@ class modes:
             pos += 1
         
         print essid
-        #
-        #
-        #
-        #
         #
         #for c in ce:
         #    count += 1    
@@ -488,60 +553,104 @@ class modes:
         if Decimal(val3) > Decimal(299):     
            print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
            print colored("Possible AIRBASE-NG Software Based Access Point","red")
-           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")    
+           print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
+           if target["ssid"] == "":
+                self.log.detectedAIRBASE(missing,target["channel"])
+           else:
+                self.log.detectedAIRBASE(target["ssid"],target["channel"])
         else:
           print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
           print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
           print ""    
     
+ 
+ 
+ 
     
     def white_listing(self):
-        interface = str(raw_input("Choose Interface for monitor: "))
+        interface = "wlan4"
         os.system("sudo ifconfig %s down" %  interface)
         os.system("sudo iwconfig "+  interface + " mode managed")
         os.system("sudo ifconfig %s up" %  interface )
         cell = Cell.all(interface)
         #b = TinyDB('db.json')
         #db.purge()
-        Auth_AP = {}
-        S = []
-        #have a counter for user choice input
-        count = 0
-        for c in cell:
-            count += 1
-            print ":"+ str(count), " ssid:", c.ssid
-                #create dictionary with informnation on the accesss point
-            SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
-                        "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
-                #append this dictionary to a list
-            S.append(SSIDS)
-        ## get choice from the user
-        input_var = int(input("Choose: "))
-        print "---------------------------------------------"
-        ap = S[input_var - 1]
-        print ap["ssid"]
-        print ap["address"]
-        print ap["encrypted"]
-        print ap["channel"]
-        print "---------------------------------------------"
         
-        loop = True
-        while loop:
-            try:
-                input_var = int(input("1: Store Valid AP \n2: Disregard and Continue\n:"))     
-                if input_var > 0 and input_var <= 2:
-                    loop = False
-            except ValueError:
-                pass
+        print "1: Purge Database"
+        print "2: Enter new"
+        print "3: Delete"
+        choice = int(raw_input("Please Choose :"))
+        if choice == 1:
+            self.db.purge()
         
-        if input_var == 1:
-            #db.purge()
-            if self.db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
-                self.db.insert(ap)
-            else:
-                print colored("!!!!!!!!!! already Stored in the database", "red")
-            #print all database
-            print self.db.all()
+        elif choice == 2:
+            Auth_AP = {}
+            S = []
+            #have a counter for user choice input
+            count = 0
+            for c in cell:
+                count += 1
+                print ":"+ str(count), " ssid:", c.ssid, " BSSID:", c.address, " Channel:", c.channel
+                    #create dictionary with informnation on the accesss point
+                SSIDS = {"no" : count ,"ssid": c.ssid, "channel":c.channel,"encrypted":c.encrypted, \
+                            "frequency":c.frequency,"address":c.address, "signal":c.signal, "mode":c.mode}
+                    #append this dictionary to a list
+                S.append(SSIDS)
+            ## get choice from the user
+            input_var = int(input("Choose: "))
+            print "---------------------------------------------"
+            ap = S[input_var - 1]
+            print ap["ssid"] 
+            print ap["address"]
+            print ap["encrypted"]
+            print ap["channel"]
+            print "---------------------------------------------"
+            
+            loop = True
+            while loop:
+                try:
+                    input_var = int(input("1: Store Valid AP \n2: Disregard and Continue\n:"))     
+                    if input_var > 0 and input_var <= 2:
+                        loop = False
+                except ValueError:
+                    pass
+            
+            if input_var == 1:
+                #db.purge()
+                if self.db.search((where('ssid') == ap["ssid"]) & (where('address') == str(ap["address"]))) == []:
+                    self.db.insert(ap)
+                else:
+                    print colored("!!!!!!!!!! already Stored in the database", "red")
+                #print all database
+                print self.db.all()
+        
+        elif choice == 3:
+                c = {}
+                count = 1
+                for ap in self.db.all():
+                    try:
+                        print count, ap["ssid"] , " ", ap["address"], " ", ap["channel"]
+                        c[count] = ap["ssid"]
+                        count +=1
+                    except KeyboardInterrupt, err:
+                        print(traceback.format_exc())
+                        print "interupted"
+                        
+                choice = int(raw_input("Detete Number? or 0 to exit :"))
+                if choice == 0:
+                    pass
+                else:
+                    try:
+                        #self.db.update(remove('ssid'), where('ssid') == str(c[choice]))
+                         self.db.remove(where('ssid') == str(c[choice]))
+                         print "Deteletion of " +  str(c[choice]) + " Successfull"
+                    except Exception, e:
+                        print e
+                        print "Deletion Error!!!!!!!!!!!"
+                        pass
+            
+    
+    
     
     def chann_change(self, channel):
         os.system("sudo ifconfig %s down" % "wlan4" )
@@ -564,40 +673,41 @@ class modes:
         return True
     
     
-    def Rouge_IDS(self):
-        loop = True
-        while loop:
-            flag = 0
-            for ap in self.db.all():
-                    try:
-                        print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
-                        print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
-                        print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
-                        s = scanning(intf="wlan4", count = 100, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap, database=self.db)                      
-                       
-                        if flag == 1:
-                            for i in xrange(1, 3):
-                                ch = random.randrange(1,11)
-                                s.set_ch(ch)
-                                s.ch_hop(ch, ap["ssid"])
-                                s.sniffAP()
-                                if i == 2:
-                                    flag = 0
-                         
-                        if flag == 0:
-                            s.set_ch(ap["channel"])
-                            s.channel_change(ap["ssid"])
-                            flag = 1                   
-                        
-                        s.sniffAP()
-                        
-                        if s.check_rm() == 1:
-                            self.db.remove(where("ssid") == ap["ssid"])
-                          
-                    except KeyboardInterrupt, err:
-                        print(traceback.format_exc())
-                        print "interupted"                                         
-            loop = False
+    #def Rouge_IDS(self):
+    #    loop = True
+    #    while loop:
+    #        flag = 0
+    #        print "Iteration Starting !!"
+    #        for ap in self.db.all():
+    #                try:
+    #                    print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
+    #                    print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
+    #                    print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
+    #                    s = scanning(intf="wlan4", count = 100, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap, database=self.db)                      
+    #                
+    #                    if flag == 1:
+    #                        for i in xrange(1, 3):
+    #                            ch = random.randrange(1,11)
+    #                            s.set_ch(ch)
+    #                            s.ch_hop(ch, ap["ssid"])
+    #                            s.sniffAP()
+    #                            if i == 2:
+    #                                flag = 0
+    #                     
+    #                    if flag == 0:
+    #                        s.set_ch(ap["channel"])
+    #                        s.channel_change(ap["ssid"])
+    #                        flag = 1                   
+    #                    
+    #                    s.sniffAP()
+    #                    
+    #                    if s.check_rm() == 1:
+    #                        self.db.remove(where("ssid") == ap["ssid"])
+    #                      
+    #                except KeyboardInterrupt, err:
+    #                    print(traceback.format_exc())
+    #                    print "interupted"                                         
+    #        #loop = False
  
  
  
@@ -608,7 +718,7 @@ def main():
     loop = True
     while loop:
         input_var = int(input(colored("1: Scan for Karma Access Points \n2: Scan a target to determine Airbase-NG \n3: Manually Scan a target to determine Airbase-NG  \n4: Try other attempt Airbase-NG  \n5: Enter Whitelist AP \n6: Start Wireless IDS \n7: System Exit \n:>", "yellow")))
-        if input_var < 0 and input_var >7:
+        if input_var < 0 and input_var >8:
             pass
         elif input_var == 1:
             result = m.KARMA_PROBE()
@@ -628,7 +738,9 @@ def main():
             Rouge_IDS.start() 
         elif input_var == 7:
             sys.exit(0)
-
+        elif input_var == 8:
+            m.start_ap("wlan3", 1, "name", "")
+            m.dhcp_conf("wlan3")
 
 
 class Rouge_IDS_Background(threading.Thread):
@@ -671,7 +783,7 @@ class Rouge_IDS_Background(threading.Thread):
                     except KeyboardInterrupt, err:
                         print(traceback.format_exc())
                         print "interupted"                                         
-            loop = False         
+            #loop = False         
 
 
 
@@ -684,15 +796,15 @@ if __name__ == '__main__':
 
 
     
-class logging:
-    def __init__(self):
-        self.nothing = None
-
-    def detected(pattern,msg):
-            foo=open("DETECTIONS.LOG","a")
-            logthis=str(datetime.datetime.today())+" | "+str(pattern)+" | "+str(msg)+"\n"
-            foo.write(logthis)
-            foo.close()
+#class logging:
+#    def __init__(self):
+#        self.nothing = None
+#
+#    def detected(pattern,msg):
+#            foo=open("DETECTIONS.LOG","a")
+#            logthis=str(datetime.datetime.today())+" | "+str(pattern)+" | "+str(msg)+"\n"
+#            foo.write(logthis)
+#            foo.close()
 
 
 
