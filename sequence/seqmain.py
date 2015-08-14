@@ -15,13 +15,7 @@ from tinydb import TinyDB, where
 from iw_karma_detect import *
 
 '''
-working very very slowly
 
-same BSSID but different other attributes such as encyption, channnel
-
-same AP ESSID with different BSSID
-
-OUI
 
 '''
 class scanning:

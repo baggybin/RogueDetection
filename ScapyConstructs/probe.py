@@ -7,8 +7,16 @@ import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
 
-
+'''
+Class to create a Probe Request
+Hostapd does not respond though normal access points do
+'''
 class Scapy80211():
+	'''
+	Constructor
+	sets SSID to ptobe for and on what interface
+	sets BSSID and used both broadcast probe and directed probe with DST
+	'''
     def  __init__(self,intf='wlan4',
       ssid='JimmyShoes',\
           source='00:C0:CA:57:23:4A',\
@@ -20,11 +28,13 @@ class Scapy80211():
       self.bssid   = bssid  
       self.intf    = intf
       self.intfmon = mon
+      #broadcast probe and directed probe with dst
       dst="c8:3a:35:c5:d3:ed"
       dst='ff:ff:ff:ff:ff:ff'
       # set Scapy conf.iface
       conf.iface = self.intfmon
 
+     #destination broadcast and radiotap, then addressing, paramaters and SSID
     def ProbeReq(self,count=10,ssid='',dst='ff:ff:ff:ff:ff:ff'):
       if not ssid: ssid=self.ssid
       param = Dot11ProbeReq()
@@ -35,7 +45,7 @@ class Scapy80211():
         /Dot11(type=0,subtype=4,addr1=dst,addr2=self.source,addr3=self.bssid)\
         /param/essid/rates/dsset
 
-      print '[*] 802.11 Probe Request: SSID=[%s], count=%d' % (ssid,count)
+      print "* --> IEEE 802.11 Probe Request", ssid, count
       try:
         sendp(pkt,count=count,inter=0.1,verbose=0)
       except:
@@ -43,10 +53,7 @@ class Scapy80211():
 
  
  #c8:3a:35:c5:d3:ed
-
-
-    
-# main routine
+# main 
 if __name__ == "__main__":
   import random
   val = "XXXX"
