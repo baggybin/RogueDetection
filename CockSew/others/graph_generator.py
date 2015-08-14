@@ -1,5 +1,9 @@
 #!/usr/bin/env python
- 
+'''
+
+Defunt and incorrect attampt at RMSE 
+Give incorrect values
+''' 
 import logging
 import time
 logging.getLogger("scapy").setLevel(1)
@@ -115,6 +119,11 @@ def Handler(pkt) :
 				print "slope + c"
 				print m, c
 				#print "m*x+c", (m*x + c)
+				'''
+
+				Defunt and incorrect attampt at RMSE 
+				Give incorrect values
+				'''
 
 				print "attempt at root mean square"
 				import statsmodels.api as sm				

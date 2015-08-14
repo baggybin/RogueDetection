@@ -1,6 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+'''
+Disregarded used different method to created bar charts
+
+'''
+
+
 s = pd.Series(
     [42.987, 42.812, 570.992, 313.512, 435.97,477.866],
     index = ["HW Average", "SW Average Other", "SW Airbase-NG VM", "SW Airbase-NG Android", "SW Airbase-NG Macbook","SW Airbase-NG Lenovo" ]

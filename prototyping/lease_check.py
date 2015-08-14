@@ -1,8 +1,11 @@
 #!/usr/bin/python
 import datetime, bisect
+
 #modified from
 #solsTiCe 
 #http://askubuntu.com/questions/219609/how-do-i-show-active-dhcp-leases
+#to an importable module
+
 import datetime, bisect
 
 

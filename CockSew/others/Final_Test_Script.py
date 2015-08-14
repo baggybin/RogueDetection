@@ -11,6 +11,16 @@ import pylab
 import matplotlib.pyplot as plt
 import simplejson
 
+'''
+Main test code used to with correct RMSE Calculations
+Also dumps Raw results to the disk through object serializtion
+
+Uses the frame recieved timestamp as per discussed in the Thesis
+
+'''
+
+
+
 from json import dumps, loads, JSONEncoder, JSONDecoder
 import pickle
 
@@ -42,6 +52,7 @@ if len(sys.argv) != 5:
 # taken as arugments from command line
 targetSSID = sys.argv[1]
 ifaceno = sys.argv[2]
+#switch from time to amount of beacons
 switch = sys.argv[3]
 amount = int(sys.argv[4])
 
@@ -246,8 +257,12 @@ def Handler(frame) :
 
 				f = open('output.txt', 'w')
 				j = dumps(d, cls=PythonObjectEncoder)
+				'''
+				Dump all results to the disk
+				'''
 				f.write(j) 
 				print "no beacons collected", beaconNumber                       
 				sys.exit(0)
 
+#scapy sniff funtion, and call to funtion handler for recieved frames on specified interface
 sniff(iface=ifaceno, prn = Handler)

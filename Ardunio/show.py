@@ -5,7 +5,10 @@ import threading
 from time import sleep
 import serial
 
-
+'''
+Class to display information on Odoid Show TFT
+which uses Ardunino components
+'''
 
 class Header:
     def render_header(self, ctx, tab, tab_name):
@@ -61,27 +64,27 @@ class Thread_Manager(threading.Thread):
         print "Start LCD"
   
   
-    #def run(self):
-    #    while True:
-    #        header = Header()
-    #        header.render_header(self.ctx,0,"HeaderName")
-    #        self.ctx.fg_color(Screen.RED).write(self.mess1).linebreak()
-    #        self.ctx.fg_color(Screen.RED).write(str(self.counter)).linebreak()
-    #        self.ctx.fg_color(Screen.BLUE).write(self.mess2)
-    #        #ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
-    #        self.ctx.set_cursor_pos(self.row * 3,0)
-    #        self.counter += 1
+    def run(self):
+        while True:
+            header = Header()
+            header.render_header(self.ctx,0,"HeaderName")
+            self.ctx.fg_color(Screen.RED).write(self.mess1).linebreak()
+            self.ctx.fg_color(Screen.RED).write(str(self.counter)).linebreak()
+            self.ctx.fg_color(Screen.BLUE).write(self.mess2)
+            #ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
+            self.ctx.set_cursor_pos(self.row * 3,0)
+            self.counter += 1
 
-    def update_screen(self):
-        self.ctx.sleep(6).reset_lcd().set_rotation(1)
-        header = Header()
-        header.render_header(self.ctx,0,"Rouge")
-        self.ctx.fg_color(Screen.RED).write(self.mess1).linebreak()
-        self.ctx.fg_color(Screen.RED).write(str(self.counter)).linebreak()
-        self.ctx.fg_color(Screen.BLUE).write(self.mess2)
-        #ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
-        self.ctx.set_cursor_pos(self.row * 3,0)
-        self.counter += 1  
+    #def update_screen(self):
+    #    self.ctx.sleep(6).reset_lcd().set_rotation(1)
+    #    header = Header()
+    #    header.render_header(self.ctx,0,"Rouge")
+    #    self.ctx.fg_color(Screen.RED).write(self.mess1).linebreak()
+    #    self.ctx.fg_color(Screen.RED).write(str(self.counter)).linebreak()
+    #    self.ctx.fg_color(Screen.BLUE).write(self.mess2)
+    #    #ctx.fg_color(Screen.BLUE).write(ReadThread.returnPress())
+    #    self.ctx.set_cursor_pos(self.row * 3,0)
+    #    self.counter += 1  
 
     def update_message(self, mess1, mess2):
         self.mess1 = mess1
@@ -90,9 +93,12 @@ class Thread_Manager(threading.Thread):
         
     
 
-
-t = Thread_Manager()
-t.start()
+#if __name__ == '__main__':
+#    t = Thread_Manager()
+#    t.start()
+#    #t.update_screen()
+#    t.update_message("f","y")
+#t.update_screen()
 
 
 

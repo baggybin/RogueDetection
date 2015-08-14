@@ -2,6 +2,13 @@
 # 7.39825300726
 # 6.2865398499
  
+
+'''
+Using the Python Time funtion
+Poor results
+'''
+
+
 import logging
 import time
 from scapy.all import *
@@ -100,6 +107,14 @@ def Handler(pkt) :
 				# mpl.title("test")
 				# mpl.legend()
 				# mpl.show()
+
+				'''
+
+
+				Incorrect attemty at the RMSE funtion using API
+				Corrected with manual code in other approach.
+				'''
+
 
 				# http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.lstsq.html
 				A = np.vstack([x, np.ones(len(x))]).T

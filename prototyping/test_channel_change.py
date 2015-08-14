@@ -26,14 +26,6 @@ from decimal import *
 from test_channel_change import *
 
 '''
-working very very slowly
-
-same BSSID but different other attributes such as encyption, channnel
-
-same AP ESSID with different BSSID
-
-OUI
-
 '''
 class scanning:
     """Class for a user of the chat client."""

@@ -16,3 +16,16 @@ STARTING CAPTURE ON 2015-08-05 20:51:43.363046
 2015-08-07 02:39:36.487678 |Severity : 9 |MESSAGE :  Possible Evil Twin Timestamp Sequence Change c0:4a:00:e4:b6:70 |SSID : lyre |bSSID : c0:4a:00:e4:b6:70 |Channel : 1
 2015-08-07 02:39:39.046901 |Severity : 9 |MESSAGE :  Possible Evil Twin Timestamp Sequence Change c0:4a:00:e4:b6:70 |SSID : lyre |bSSID : c0:4a:00:e4:b6:70 |Channel : 1
 2015-08-07 02:39:41.607300 |Severity : 9 |MESSAGE :  Possible Evil Twin Timestamp Sequence Change c0:4a:00:e4:b6:70 |SSID : lyre |bSSID : c0:4a:00:e4:b6:70 |Channel : 1
+2015-08-10 22:33:41.013348 |Severity 9 |MESSAGE  Possible Evil Twin Timestamp Sequence Change 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:65:94:33 |Channel 6
+2015-08-10 22:33:41.773177 |Severity 10 |MESSAGE BSSID Adresss has been chnaged from 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:32:64:94:33 |Channel 6
+2015-08-10 22:33:43.264347 |Severity 10 |MESSAGE BSSID Adresss has been chnaged from 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:65:94:77 |Channel 6
+2015-08-10 22:33:43.573036 |Severity 10 |MESSAGE Sequence Numbers Irregular  |SSID dd-wrt |BSSID 00:13:10:65:94:33 |Channel 6
+2015-08-10 22:33:43.573929 |Severity 9 |MESSAGE  Possible Evil Twin Timestamp Sequence Change 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:65:94:33 |Channel 6
+2015-08-10 22:33:44.797528 |Severity 10 |MESSAGE BSSID Adresss has been chnaged from 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:f4:94:33 |Channel 6
+2015-08-10 22:33:46.235583 |Severity 9 |MESSAGE  Possible Evil Twin Timestamp Sequence Change 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:65:94:33 |Channel 6
+2015-08-11 20:48:52.611555 |Severity 10 |MESSAGE Sequence Numbers Irregular  |SSID lyre |BSSID c0:4a:00:e4:b6:70 |Channel 1
+2015-08-11 20:50:25.956185 |Severity 10 |MESSAGE BSSID Adresss has been chnaged from 00:13:10:65:94:33 |SSID dd-wrt |BSSID 02:13:10:65:94:33 |Channel 6
+2015-08-11 20:50:26.573264 |Severity 9 |MESSAGE  Possible Evil Twin Timestamp Sequence Change 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:65:94:33 |Channel 6
+2015-08-11 20:50:28.105089 |Severity 10 |MESSAGE BSSID Adresss has been chnaged from 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:03:19:65:94:33 |Channel 6
+2015-08-11 20:50:29.235692 |Severity 9 |MESSAGE  Possible Evil Twin Timestamp Sequence Change 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:65:94:33 |Channel 6
+2015-08-11 20:50:29.874170 |Severity 10 |MESSAGE BSSID Adresss has been chnaged from 00:13:10:65:94:33 |SSID dd-wrt |BSSID 00:13:10:65:94:11 |Channel 6
