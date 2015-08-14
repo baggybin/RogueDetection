@@ -2,6 +2,11 @@ from json import dumps, loads, JSONEncoder, JSONDecoder
 import pickle
 import matplotlib.pyplot as plt
 
+'''
+
+Create Graph For display
+'''
+
 class PythonObjectEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (list, dict, str, unicode, int, float, bool, type(None))):
