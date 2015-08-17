@@ -28,11 +28,13 @@ from binascii import *
 from scapy.all import *
 import signal
 #https://github.com/ivanlei/airodump-iv/blob/master/airoiv/scapy_ex.py
-import scapy_ex
+#import scapy_ex
 #import wx
 #from wx.lib.pubsub import pub
 from honey_pot import *
 from custom_log_rouge import *
+from accumulator import *
+from multiprocessing import Process, Value, Array, Manager
 
 
 import sys
@@ -48,6 +50,7 @@ from show import *
 #    t.update_message("f","y")
 #t.update_screen()
 '''
+
 
 
 
@@ -83,7 +86,7 @@ accesspoint - list of detiaLs of the current access point under inspection, take
 
 class scanning:
     """Class for a user of the chat client."""
-    def __init__(self, intf, count, channel,BSSID, SSID, accesspoint, database):
+    def __init__(self, intf, count, channel,BSSID, SSID, accesspoint, database, Shared_Mem_Dictionary):
         self.intf = intf
         self.BSSID = BSSID
         self.SSID = SSID
@@ -109,6 +112,7 @@ class scanning:
         self.stop_sniff = False
         #custom log
         self.log = rougelog()
+        self.Shared_Mem_Dictionary = Shared_Mem_Dictionary
     
     '''
     channel_change:
@@ -205,7 +209,8 @@ class scanning:
     
     '''
     oui:
-    uses the manuf modules to check the OUI code of the
+    uses the manuf modules to check the 
+    code of the
     BSSID against verified wireshark manufactures database
     '''
     def oui(self, frame):
@@ -267,7 +272,7 @@ class scanning:
                 return
             
             #Test if the frame is IEEE 802.11 and a beacon management frame and the correct SSID value
-            if frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8 and frame.info == self.accesspoint["ssid"]:           
+            elif frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8 and frame.info == self.accesspoint["ssid"]:           
               self.appearanceCounter = 0
               
               '''
@@ -295,25 +300,34 @@ class scanning:
               #        print "Channel Has changed"
               #except:
               #    pass
-              
-              #operating_channel = frame.notdecoded
-              #data = frame.notdecoded[12:13]
-              #binascii.hexlify(data)
-              #int(ord(binascii.hexlify(data)),16)
-              
-              '''
-              Checks if the channels has changed from the original whitelisted access point
-              logs the change if noticed
-              '''
-              if not frame.Channel == self.accesspoint["channel"]:
-                  print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "pink")
-                  print "Channel Has been Changed to another Frequency"
-                  #def channelChange(self, SSID, BSSID, Channel, level=2):
-                  self.log.channelChange(self.accesspoint["ssid"],self.accesspoint["address"],str(self.accesspoint["channel"] + " " +frame.Channel))
-                  print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")
-              # get recieved signal strenght 
+              #sig_str = -(256-ord(frame.notdecoded[-4:-3]))
+              #print sig_str
+              # overapping channel cuases bug where frame
+              # is recieved by scapy on mon interface on overlappig channel and
+              # then perciieved to be a channel change
+              try:
+                channel    = int( ord(frame[Dot11Elt:3].info))
+              #print "channel", channel
+                '''
+                Checks if the channels has changed from the original whitelisted access point
+                logs the change if noticed
+                '''
+                if not channel == self.accesspoint["channel"] and frame.info == self.accesspoint["ssid"] :
+                    print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")
+                    print "Channel Has been Changed to another Frequency", "from", str(self.accesspoint["channel"]), "to " + str(channel)
+                    #def channelChange(self, SSID, BSSID, Channel, level=2):
+                    self.log.channelChange(self.accesspoint["ssid"],self.accesspoint["address"],str(self.accesspoint["channel"]) + " " +str(channel))
+                    print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")    
+              except Exception:
+                pass                 
+              #get recieved signal strenght
+              #import scapy_ex
+              import scapy_ex
               signal_strength = frame.dBm_AntSignal
-    
+              # unload module scapy_Ex otherwise mess with channel decoding on next loop
+              del(scapy_ex)
+                
+
               '''
               OUI:
               checks the OUI code of the MAC (BSSID) address to make
@@ -379,7 +393,7 @@ class scanning:
               if they are not then log this as a potential evil twin
               '''
               try:
-                  if frame.info == self.SSID or self.BSSID.lower() == frame.addr2:
+                  if frame.info == self.SSID or self.BSSID.lower() == frame.addr2 and (channel == self.accesspoint["channel"]):
                       try:
                           print frame.SC
                           self.seq1 = frame.SC
@@ -452,13 +466,20 @@ class scanning:
             if frame.haslayer(Dot11) and frame.type == 0 and frame.subtype == 8 and frame.info == self.accesspoint["ssid"]:           
               self.appearanceCounter = 0
   
-              if not frame.Channel == self.accesspoint["channel"]:
+              # overapping channel cuases bug where frame
+              # is recieved by scapy on mon interface on overlappig channel and
+              # then perciieved to be a channel change
+              channel    = int( ord(frame[Dot11Elt:3].info))
+  
+  
+  
+              if not channel == self.accesspoint["channel"] and frame.info == self.accesspoint["ssid"]:
                   logging.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                   logging.info("Channel Has been Changed to another Frequency")
                   #def channelChange(self, SSID, BSSID, Channel, level=2):
-                  self.log.channelChange(self.accesspoint["ssid"],self.accesspoint["address"],str(self.accesspoint["channel"] + " " +frame.Channel))
+                  self.log.channelChange(self.accesspoint["ssid"],self.accesspoint["address"],str(self.accesspoint["channel"] + " " + channel))
                   logging.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")                
-              signal_strength = frame.dBm_AntSignal
+              #signal_strength = frame.dBm_AntSignal
   
               enc = None
               if self.flag1 == 0:
@@ -479,7 +500,7 @@ class scanning:
                   if not self.accesspoint["encrypted"] == enc:
                       logging.info("the encrpytion has changed")
                       #logger.error("the encrpytion has changed for " + frame.info)
-                      self.log.general(str("Security Detials chnages to " + enc),frame.info,frame.addr2,frame.Channel, level=8)
+                      self.log.general(str("Security Detials chnages to " + enc),frame.info,frame.addr2,channel, level=8)
                      
                       
               if not self.accesspoint["address"].lower() == frame.addr2 and( frame.info == self.accesspoint["ssid"]):
@@ -501,7 +522,7 @@ class scanning:
                   logging.info(self.accesspoint["address"].lower())             
              
               try:
-                  if frame.info == self.SSID or self.BSSID.lower() == frame.addr2:
+                  if frame.info == self.SSID or self.BSSID.lower() == frame.addr2 and (channel == self.accesspoint["channel"]):
                       try:
                           logging.info(frame.SC)
                           self.seq1 = frame.SC
@@ -509,7 +530,7 @@ class scanning:
                           self.time_seq.append(frame.timestamp)
                           self.counter += 1
                           if self.counter == 25:
-                              logging.info ("RSSI for " + str(frame.info) + " " + str(signal_strength))
+                             # logging.info ("RSSI for " + str(frame.info) + " " + str(signal_strength))
                               logging.info("++++++++++++++++++++++ 25 Sequenecec Numbers Collected")
                               logging.info("++++++++++++++++++++++ Analyzing +++++++++++++++++++++")
                               val = self.checkTheSeq(self.seq_list)
@@ -569,11 +590,12 @@ honey_pot: create a WIFI Honeypot
 '''
 class modes:
     """Class for a user of the chat client."""
-    def __init__(self):
+    def __init__(self, Shared_Mem_Dictionary):
         self.karmaDetecetection = {}
         self.airbaseNG_Detection = {}
         self.db = TinyDB('db.json')
-        self.log = rougelog()      
+        self.log = rougelog()
+        self.Shared_Mem_Dictionary = Shared_Mem_Dictionary
         
     #def start_ap(self, mon_iface, channel, essid, args):
     #    print " Starting the fake access point..."
@@ -1029,7 +1051,10 @@ Gives options to start or stop different services and modes
 
 '''
 def main():
-    m = modes()
+    # Create a Shared Memory manager to share object between threads
+    manager = Manager()
+    Shared_Mem_Dictionary = manager.dict()
+    m = modes(Shared_Mem_Dictionary)
     loop = True
     while loop:
         input_var = int(input(colored("1: Scan for Karma Access Points \n2: Scan a target to determine Airbase-NG \n3: Manually Scan a target to determine Airbase-NG  \n4: Try other attempt Airbase-NG  \n5: Enter Whitelist AP \n6: Start Wireless IDS \n7: HoneyPot \n8: System Exit \n:>", "yellow")))
@@ -1047,12 +1072,14 @@ def main():
             m.white_listing()
         elif input_var == 6:
 
-            i = int(input(colored("1: Blocking IDS Mode \n2: Daemon Mode")))
+            i = int(input(colored("1: Blocking IDS Mode \n2: Daemon Mode \n3: Disable CH Hopping")))
             db = m.get_db()
             if i == 1:
-                Rouge_IDS = Rouge_IDS_Background(db, False)  
+                Rouge_IDS = Rouge_IDS_Background(db, False, Shared_Mem_Dictionary,False)  
             elif i == 2:
-                Rouge_IDS = Rouge_IDS_Background(db, True)
+                Rouge_IDS = Rouge_IDS_Background(db, True, Shared_Mem_Dictionary,False)
+            elif i == 3:
+                Rouge_IDS = Rouge_IDS_Background(db, False, Shared_Mem_Dictionary, True)
                 
             Rouge_IDS.start()    
             #subprocess.Popen([sys.executable, Rouge_IDS.start], shell = True)             
@@ -1077,25 +1104,27 @@ Currently cannot be stopped appropriately and saftly
 
 '''
 class Rouge_IDS_Background(threading.Thread):
-    def __init__(self, db , daemon):
+    def __init__(self, db , daemon, Shared_Mem_Dictionary, CHop):
         threading.Thread.__init__(self)
         self.daemon = daemon
         self.db = db
-
+        self.Shared_Mem_Dictionary = Shared_Mem_Dictionary
+        self.CHop = CHop
+        
     def run(self):
         loop = True
         while loop:
-            flag = 0
+            flag = 1
             for ap in self.db.all():
                     try:
                         if not self.daemon == True:
                             print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
                             print "$$$$$$$$$$$$$$$$$$$$$$$   Now Sannning -----> " , ap["ssid"]
                             print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", 'red')
-                        s = scanning(intf="wlan4", count = 100, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap, database=self.db)
+                        s = scanning(intf="wlan4", count = 100, channel=ap["channel"], BSSID=ap["address"],SSID=ap["ssid"], accesspoint=ap, database=self.db, Shared_Mem_Dictionary=self.Shared_Mem_Dictionary)
                        
                        
-                        if flag == 1:
+                        if flag == 1 and not self.CHop == True:
                             for i in xrange(1, 3):
                                 ch = random.randrange(1,11)
                                 s.set_ch(ch)
@@ -1109,7 +1138,9 @@ class Rouge_IDS_Background(threading.Thread):
                                     s.sniffAP()
                                 if i == 2:
                                     flag = 0
-                         
+                        
+                        if  self.CHop == True:
+                            flag = 0
                          
                         if flag == 0:
                             s.set_ch(ap["channel"])
@@ -1117,7 +1148,7 @@ class Rouge_IDS_Background(threading.Thread):
                                 s.channel_change(ap["ssid"], daemon = True)
                             else:
                                 s.channel_change(ap["ssid"])
-                            flag = 1                   
+                                   
                         
                         
                         
