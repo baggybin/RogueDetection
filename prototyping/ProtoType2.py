@@ -202,7 +202,11 @@ class scanning:
         for e in li[1:]:
             a=int(e)
             if a > start:
-                start=a
+                start = a
+            #attempt to catch if sequence resets
+            #stop a false positive
+            elif a == 0:
+                start = a
             else:
                 return False
         return True
@@ -307,7 +311,8 @@ class scanning:
               # then perciieved to be a channel change
               try:
                 channel    = int( ord(frame[Dot11Elt:3].info))
-              #print "channel", channel
+              #print "channel", channel 
+              
                 '''
                 Checks if the channels has changed from the original whitelisted access point
                 logs the change if noticed
@@ -441,6 +446,11 @@ class scanning:
                 pass
         #signal.signal(signal.SIGINT, self.stop_sniffing)
         sniff(iface=self.intf, count = self.count, prn=PacketHandler, store=0,timeout = 10,lfilter = lambda x:(x.haslayer(Dot11Beacon)))# and x.info == self.accesspoint["ssid"])#, stop_filter=self.keep_sniffing )
+
+
+
+
+
 
 
 
@@ -1057,7 +1067,7 @@ def main():
     m = modes(Shared_Mem_Dictionary)
     loop = True
     while loop:
-        input_var = int(input(colored("1: Scan for Karma Access Points \n2: Scan a target to determine Airbase-NG \n3: Manually Scan a target to determine Airbase-NG  \n4: Try other attempt Airbase-NG  \n5: Enter Whitelist AP \n6: Start Wireless IDS \n7: HoneyPot \n8: System Exit \n:>", "yellow")))
+        input_var = int(input(colored("1: Scan for Karma Access Points \n2:> Scan a target to determine Airbase-NG \n3:> Manually Scan a target to determine Airbase-NG  \n4:> Try other attempt Airbase-NG  \n5: Enter Whitelist AP \n6: Start Wireless IDS \n7: HoneyPot \n8: System Exit \n:>", "yellow")))
         if input_var < 0 and input_var >8:
             pass
         elif input_var == 1:
@@ -1151,15 +1161,15 @@ class Rouge_IDS_Background(threading.Thread):
                                    
                         
                         
-                        
+                        flag = 1
                         if self.daemon == True:
                             s.sniffAP_daemon()
                         else:
                             s.sniffAP()
                         
                         
-                        if s.check_rm() == 1:
-                            self.db.remove(where("ssid") == ap["ssid"])
+                        #if s.check_rm() == 1:
+                        #    self.db.remove(where("ssid") == ap["ssid"])
                           
                     except KeyboardInterrupt, err:
                         print(traceback.format_exc())
