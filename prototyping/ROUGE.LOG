@@ -1,1 +1,33 @@
 
+2015-08-18 19:52:49.813308 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:11:22:33:44:00\n', '00:11:22:33:44:00\n', '00:11:22:33:44:00\n'] |Times 3 |Single AP True
+2015-08-18 19:56:19.969275 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 2 |Single AP True
+2015-08-18 20:03:47.169161 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 20:15:24.109087 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 20:21:15.996084 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 20:25:19.595957 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 20:27:45.951067 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 20:31:42.836304 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 20:35:28.375455 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 23:16:56.776891 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 23:37:56.153922 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 23:41:06.586709 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 23:44:32.711861 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 23:46:55.617388 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 23:49:52.063810 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-18 23:56:58.642362 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 00:04:24.662762 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 00:11:18.678548 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 00:22:47.706871 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 00:43:18.961053 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 00:49:02.905041 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 01:05:14.464085 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID lyre |Channel 1
+2015-08-19 01:22:02.665187 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 01:34:30.495481 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n', '00:C0:CA:60:DC:B6\n'] |Times 3 |Single AP True
+2015-08-19 01:50:17.977097 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID dd-wrt |Channel 6
+2015-08-19 01:51:03.054355 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID dd-wrt |Channel 6
+2015-08-19 01:52:22.547104 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID dd-wrt |Channel 6
+2015-08-19 02:02:53.318484 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID dd-wrt |Channel 6
+2015-08-19 02:11:50.112642 |Severity 10 |MESSAGE KARMA Access Point Detection |BSSID ['00:11:22:33:44:00\n', '00:11:22:33:44:00\n', '00:11:22:33:44:00\n'] |Times 3 |Single AP True
+2015-08-19 02:25:54.140009 |Severity 10 |MESSAGE BSSID Adresss has been chnaged from c0:4a:00:e4:b6:70 |SSID lyre |BSSID 83:95:00:c8:6d:e1 |Channel 2
+2015-08-19 02:26:10.115849 |Severity 10 |MESSAGE Sequence Numbers Irregular  |SSID lyre |BSSID c0:4a:00:e4:b6:70 |Channel 1
+2015-08-19 02:31:02.905112 |Severity 7 |MESSAGE Invalid OUI Code  |SSID Zoom |BSSID 10:59:18:66:bb:03 |Channel 2
