@@ -49,3 +49,12 @@
 2015-08-21 04:05:39.515458 |Severity 9 |MESSAGE  Possible Evil Twin Timestamp Sequence Change 00:50:18:66:8b:7e |SSID Zoom |BSSID 00:50:18:66:8b:7e |Channel 10
 2015-08-21 04:05:40.789013 |Severity 10 |MESSAGE Sequence Numbers Irregular  |SSID Zoom |BSSID 00:50:18:66:8b:7e |Channel 10
 2015-08-21 04:05:40.790028 |Severity 9 |MESSAGE  Possible Evil Twin Timestamp Sequence Change 00:50:18:66:8b:7e |SSID Zoom |BSSID 00:50:18:66:8b:7e |Channel 10
+2015-08-21 04:49:14.603678 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID dd-wrt |Channel 6
+2015-08-21 04:53:38.573641 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10
+2015-08-21 04:55:01.451695 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10
+2015-08-21 04:55:59.222966 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10
+2015-08-21 04:56:58.998799 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10
+2015-08-21 04:58:59.681504 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10
+2015-08-21 04:59:52.206812 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10
+2015-08-21 05:00:37.219703 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10
+2015-08-21 05:01:36.043346 |Severity 3 |MESSAGE Possible Airbase-NG Access Point Detection |SSID Evil |Channel 10

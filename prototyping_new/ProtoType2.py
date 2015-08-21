@@ -341,6 +341,7 @@ class scanning:
                     print "Channel Has been Changed to another Frequency", "from", str(self.accesspoint["channel"]), "to " + str(channel)
                     #def channelChange(self, SSID, BSSID, Channel, level=2):
                     self.log.channelChange(self.accesspoint["ssid"],self.accesspoint["address"],str(self.accesspoint["channel"]) + " " +str(channel))
+                    
                     print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")    
               except Exception:
                 pass                 
@@ -357,9 +358,6 @@ class scanning:
               checks the OUI code of the MAC (BSSID) address to make
               sure that it is a valid manufaturers address
               log if this is not the case
-              
-              make sure on correct channel or gets corrupt frames from overlalpping channels
-              or other issues with cause a 
               '''
               enc = None
               if self.flag1 == 0 and (channel == self.channel):
@@ -733,6 +731,13 @@ class modes:
            print colored("Possible AIRBASE-NG Software Based Access Point","red")
            print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
            self.log.detectedAIRBASE(m_ssid,m_channnel)
+           import random
+           AP =  AccessPoint(str("AIRBASE-NG" + str(m_ssid) + str(m_channnel)) + str(random.uniform(1, 10000)))
+           AP.setBSSID = ""
+           AP.setAirbaseNG()
+           AP.setSSID(m_ssid)
+           self.Shared_Mem_Dictionary[AP.getID()]=AP
+           
         else:
           print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
           print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
@@ -791,7 +796,7 @@ class modes:
             Switch to the channel, and scan the specified SSID 
             '''
          
-            chann_change(channel[c])
+            chann_change(int(channel[c]))
             # create instance of the clock skew Class from clock_skew_main1.py
             clock = ClockSkew(str(essid[c]))
             clock.overlordfuntion()
@@ -809,7 +814,14 @@ class modes:
                 print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
                 print colored("Possible AIRBASE-NG Software Based Access Point","red")
                 print colored("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "red")
-                self.log.detectedAIRBASE(str(essid[c]),channel[c] )
+                self.log.detectedAIRBASE(str(essid[c]),channel[c])
+                import random
+                AP =  AccessPoint(str("AIRBASE-NG") + str(essid[c]) + str(channel[c]) +  str(address[c]) + str(random.uniform(1, 10000)))
+                AP.setBSSID = address[c]
+                AP.setAirbaseNG()
+                AP.setSSID(essid[c])
+                self.Shared_Mem_Dictionary[AP.getID()]=AP
+                
             else:
                print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
                print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
@@ -924,6 +936,12 @@ class modes:
                 self.log.detectedAIRBASE(missing,target["channel"])
            else:
                 self.log.detectedAIRBASE(target["ssid"],target["channel"])
+           import random
+           AP =  AccessPoint(str("AIRBASE-NG") + str(target["ssid"]) + str(target["channel"]) + str(target["address"]))
+           AP.setBSSID = target["address"]
+           AP.setAirbaseNG()
+           AP.setSSID(target["ssid"])
+           self.Shared_Mem_Dictionary[AP.getID()]=AP
         else:
           print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
           print colored("<<<<<<<<<<<<    Not AirBase-NG   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", "yellow")
@@ -1113,39 +1131,45 @@ def main(acc):
     
     loop = True
     while loop:
-        input_var = int(input(colored("1: Scan for Karma Access Points \n2:> Scan a target to determine Airbase-NG \n3:> Manually Scan a target to determine Airbase-NG  \n4:> Try other attempt Airbase-NG  \n5: Enter Whitelist AP \n6: Start Wireless IDS \n7: HoneyPot \n8: System Exit \n:>", "yellow")))
-        if input_var < 0 and input_var >8:
-            pass
-        elif input_var == 1:
-            result = m.KARMA_PROBE()
-        elif input_var == 2:
-            val = m.airbaseNG()
-        elif input_var == 3:
-            val = m.airbaseNG_manual()
-        elif input_var == 4:
-            val = m.airbaseNG_secondAttempt()             
-        elif input_var == 5:
-            m.white_listing()
+        try:
             
             
-        elif input_var == 6:
-            i = int(input(colored("1: Blocking IDS Mode \n2: Daemon Mode \n3: Disable CH Hopping")))
-            db = m.get_db()
-            if i == 1:
-                Rouge_IDS = Rouge_IDS_Background(db, False, Shared_Mem_Dictionary,False)  
-            elif i == 2:
-                Rouge_IDS = Rouge_IDS_Background(db, True, Shared_Mem_Dictionary,False)
-            elif i == 3:
-                Rouge_IDS = Rouge_IDS_Background(db, False, Shared_Mem_Dictionary, True)   
-            Rouge_IDS.start()    
-            #subprocess.Popen([sys.executable, Rouge_IDS.start], shell = True)
-            
-        elif input_var == 7:
-            h = honey()
-            m.honey_pot(h)
-        elif input_var == 8:
-            sys.exit(0)
-
+            input_var = int(input(colored("1: Scan for Karma Access Points \n2:> Scan a target to determine Airbase-NG \n3:> Manually Scan a target to determine Airbase-NG  \n4:> Try other attempt Airbase-NG  \n5: Enter Whitelist AP \n6: Start Wireless IDS \n7: HoneyPot \n8: System Exit \n:>", "yellow")))
+            if input_var < 0 and input_var >8:
+                pass
+            elif input_var == 1:
+                result = m.KARMA_PROBE()
+            elif input_var == 2:
+                val = m.airbaseNG()
+            elif input_var == 3:
+                val = m.airbaseNG_manual()
+            elif input_var == 4:
+                val = m.airbaseNG_secondAttempt()             
+            elif input_var == 5:
+                m.white_listing()
+                
+                
+            elif input_var == 6:
+                i = int(input(colored("1: Blocking IDS Mode \n2: Daemon Mode \n3: Disable CH Hopping")))
+                db = m.get_db()
+                if i == 1:
+                    Rouge_IDS = Rouge_IDS_Background(db, False, Shared_Mem_Dictionary,False)  
+                elif i == 2:
+                    Rouge_IDS = Rouge_IDS_Background(db, True, Shared_Mem_Dictionary,False)
+                elif i == 3:
+                    Rouge_IDS = Rouge_IDS_Background(db, False, Shared_Mem_Dictionary, True)   
+                Rouge_IDS.start()    
+                #subprocess.Popen([sys.executable, Rouge_IDS.start], shell = True)
+                
+            elif input_var == 7:
+                h = honey()
+                m.honey_pot(h)
+            elif input_var == 8:
+                sys.exit(0)
+                
+                
+        except SyntaxError, s:
+            print s
     
 
 '''
