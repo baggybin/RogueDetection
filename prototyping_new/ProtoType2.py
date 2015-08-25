@@ -109,6 +109,7 @@ class scanning:
         self.seq1 = 0
         self.flag1 = 0
         self.counter = 0
+        self.counter2 = 0
         # orginal channel of access point under inspection being set
         self.channel = accesspoint["channel"]
         self.count = count
@@ -151,28 +152,6 @@ class scanning:
         except Exception, err :
                print err 
     
-    ## decorator to make system call methods safe from EINTR
-    #def systemcall(self, meth):
-    #    # have to import this way to avoid a circular import
-    #    from _socket import error as SocketError
-    #    def systemcallmeth(*args, **kwargs):
-    #        while 1:
-    #            try:
-    #                    rv = meth(*args, **kwargs)
-    #            except EnvironmentError as why:
-    #                if why.args and why.args[0] == EINTR:
-    #                    continue
-    #                else:
-    #                    raise
-    #            except SocketError as why:
-    #                if why.args and why.args[0] == EINTR:
-    #                    continue
-    #                else:
-    #                    raise
-    #            else:
-    #                break
-    #        return rv
-    #    return systemcallmeth
     
     '''
     set_ch:
@@ -216,9 +195,12 @@ class scanning:
     otherwise False
     '''
     def checkTheSeq(self, li):
+        # splice the first index to get the inital value
         start=int(li[0])
+        # then for the rest of the indexes
         for e in li[1:]:
             a=int(e)
+            # if next value is greater, then copy that to start valiable
             if a > start:
                 start = a
             #attempt to catch if sequence resets
@@ -230,7 +212,7 @@ class scanning:
         return True
     
     '''
-    oui:
+    OUI:
     uses the manuf modules to check the 
     code of the
     BSSID against verified wireshark manufactures database
@@ -247,7 +229,7 @@ class scanning:
     '''
     stop_sniffing:
     was to be used to stop sniffing on a pass earlier through
-    kayboard interupt  (not working)
+    kayboard interrupt (not working)
     '''
     def stop_sniffing(self, signal, frame):
         self.stop_sniff = True
@@ -258,7 +240,7 @@ class scanning:
     
     '''
     keep_sniffing:
-    same as aboce usage (not working)
+    same as above usage (not working)
     ''' 
     def keep_sniffing(self, pckt):
         return self.stop_sniff
@@ -327,6 +309,11 @@ class scanning:
               # overapping channel cuases bug where frame
               # is recieved by scapy on mon interface on overlappig channel and
               # then perciieved to be a channel change
+              
+              
+              
+              # counter to limit printing to the standard output
+              self.counter2 += 1 
               channel = int( ord(frame[Dot11Elt:3].info))
               try:
                 channel = int( ord(frame[Dot11Elt:3].info))
@@ -337,12 +324,12 @@ class scanning:
                 logs the change if noticed
                 '''
                 if not channel == self.accesspoint["channel"] and frame.info == self.accesspoint["ssid"] :
-                    print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")
-                    print "Channel Has been Changed to another Frequency", "from", str(self.accesspoint["channel"]), "to " + str(channel)
-                    #def channelChange(self, SSID, BSSID, Channel, level=2):
+                    if self.counter2 == 25:
+                        print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")
+                        print "Channel Has been Changed to another Frequency", "from", str(self.accesspoint["channel"]), "to " + str(channel)
+                        #def channelChange(self, SSID, BSSID, Channel, level=2):
+                        print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red") 
                     self.log.channelChange(self.accesspoint["ssid"],self.accesspoint["address"],str(self.accesspoint["channel"]) + " " +str(channel))
-                    
-                    print colored("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", "red")    
               except Exception:
                 pass                 
               #get recieved signal strenght
@@ -351,8 +338,8 @@ class scanning:
               signal_strength = frame.dBm_AntSignal
               # unload module scapy_Ex otherwise mess with channel decoding on next loop
               del(scapy_ex)
-                
-
+            
+               
               '''
               OUI:
               checks the OUI code of the MAC (BSSID) address to make
@@ -362,14 +349,16 @@ class scanning:
               enc = None
               if self.flag1 == 0 and (channel == self.channel):
                   result = self.oui(frame.addr2)
-                  print colored("*******************    OUI ", "blue"),result
+                  if self.counter2 == 25:
+                    print colored("*******************    OUI ", "blue"),result
                   self.flag1 = 1
                   if result == False:
-                    print colored("Not a Manufactures OUI Code ", "red"),result
+                    if self.counter2 == 25:
+                        print colored("Not a Manufactures OUI Code ", "red"),result
                     self.log.Invalid_OUI(frame.info,frame.addr2,frame.Channel)
                     
                   '''
-                  Checks if encyption has been disbaled on the whitelisted access point
+                  Checks if encyption has been disbaled on the whitelisted access point,
                   logs this if it is the case
                   '''
                   
@@ -382,7 +371,8 @@ class scanning:
                   else:
                       enc = False
                   if not self.accesspoint["encrypted"] == enc:
-                      print colored("the encrpytion has changed", "red")
+                      if self.counter2 == 25:
+                        print colored("the encrpytion has changed", "red")
                       #logger.error("the encrpytion has changed for " + frame.info)
                       self.log.general(str("Security Detials chnages to " + enc),frame.info,frame.addr2,frame.Channel, level=8)
                      
@@ -394,27 +384,35 @@ class scanning:
               # false postitives generated by frames observed in oiverlapping
               # channels 
               if not self.accesspoint["address"].lower() == frame.addr2 and (frame.info == self.accesspoint["ssid"])  and (channel == self.channel):
-                  print colored("BSSID Adresss has been chnaged", "red"), frame.info
+                  if self.counter2 == 25:
+                    print colored("BSSID Adresss has been chnaged", "red"), frame.info
                   self.log.general(str("BSSID Adresss has been chnaged from " + self.accesspoint["address"].lower()),frame.info,frame.addr2,frame.Channel, level=10)
-                  print frame.info
-                  print frame.addr2
-                  print self.accesspoint["address"]
-                  print self.accesspoint["address"].lower()
-                  
+                  if self.counter2 == 25:
+                    print frame.info
+                    print frame.addr2
+                    print self.accesspoint["address"]
+                    print self.accesspoint["address"].lower()
+              
+                                   
               '''
               Simple check for an Android software accesss point (they randoimise MAC) and use AndroidAP as defualt SSID
               ''' 
               #Android randomises mac
               if not self.accesspoint["address"].lower() == frame.addr2 and (frame.info =="AndroidAP")  and (channel == self.channel):
-                  print colored("Android Software access Point Operating", "red")
+                  if self.counter2 == 25:
+                    print colored("Android Software access Point Operating", "red")
                   self.log.general(str("Android Random Mac Change" + self.accesspoint["address"].lower()),frame.info,frame.addr2,frame.Channel, level=10)
-                  print colored("OR crossralk, or System that uses random MACS like Android","yellow"), frame.info
+                  if self.counter2 == 25:
+                    print colored("OR crossralk, or System that uses random MACS like Android","yellow"), frame.info
                   print frame.info
                   print frame.addr2
                   print self.accesspoint["address"]
                   print self.accesspoint["address"].lower()             
               
-                
+              self.counter2 = 0
+              
+              
+              
               '''
               Grab sequence numbers and timestamps if SSID or BSSID are the same
               then check that group to verify if they are indeen sequential.
@@ -423,7 +421,7 @@ class scanning:
               try:
                   if (frame.info == self.SSID or self.BSSID.lower() == frame.addr2) and (channel == self.channel):
                       try:
-                          print frame.SC
+                          #print frame.SC
                           self.seq1 = frame.SC
                           self.seq_list.append(frame.SC)
                           self.time_seq.append(frame.timestamp)
@@ -954,8 +952,6 @@ class modes:
     
     Allows fot the scanning, entry and deletion of Authorised access points
     from the database.
-    
-    
     '''
     
 
@@ -1119,13 +1115,18 @@ Gives options to start or stop different services and modes
 '''
 def main(acc):
     # Create a Shared Memory manager to share object between threads
+    # access them as global variables with global scope
     global accum
     global manager
+    # create the Dictionary from the manager
     Shared_Mem_Dictionary = manager.dict()
+    # pass both to the modes instance
     m = modes(Shared_Mem_Dictionary)
-    
+    # Then pass both to the accumulator (Alert System)
     accum.setSMem(Shared_Mem_Dictionary, manager)
     
+    # Start the accumluator Daemon if enabled via the command line
+    # cuases issues randomly 
     if acc == True:
         accum.start()
     
@@ -1254,16 +1255,17 @@ class Rouge_IDS_Background(threading.Thread):
 if __name__ == '__main__':
     from tinydb import TinyDB, where
     
+    
+    ## take a command from the CLI to enable or Disable the (accumulator)(Alert System)
     if len(sys.argv) != 2:
         print "%s - [1 for accumulator] [0 for disable] " % sys.argv[0]
         sys.exit(1)
     
     
-    
+    #pass it to main
     acc = False  
     if int(sys.argv[1]) == 1:
         acc = True
-    
     main(acc)
 
 

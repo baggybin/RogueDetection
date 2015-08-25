@@ -4,6 +4,12 @@ import traceback
 import sys
 from multiprocessing import Process, Value, Array, Manager
 
+'''
+Access Point:
+
+stores marks for the accumulator scoring system
+for individual access points
+'''
 
 class AccessPoint:
     def __init__(self, ID):
@@ -17,7 +23,6 @@ class AccessPoint:
         self.AIRBASE = 0
         self.sqChange = 0
         self.timestampChange = 0
-        
     
     def getID(self):
         return self.ID
@@ -61,8 +66,7 @@ class AccessPoint:
     
     def getKARMABSSID(self ):
         return self.KARMA_BSSID
-    
-    
+
     def getAirbaseNG(self):
         return self.sqChange
     
@@ -74,6 +78,13 @@ import smtplib
 import threading
 from threading import Thread
 
+
+'''
+Starts accumulator scoring system,
+which currently tests if there are KARMA or AIRbase-NG detections stored
+in the shared memory space.
+
+'''
 class accumulator(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -85,13 +96,13 @@ class accumulator(threading.Thread):
         print "Accumulator Starting\n"
         while True:
             try:
-                #print len(self.Shared_Mem_Dictionary)
-                #print bool(self.Shared_Mem_Dictionary)
-                #
-                #d=manager.list(self.Shared_Mem_Dictionary)
+                # if there is an item in the shared memory dictionary 
                 if bool(self.Shared_Mem_Dictionary) == True:
+                    # make it into an Iterable List
                     d=self.manager.list(self.Shared_Mem_Dictionary)
+                    # interate through the list
                     for i in d:
+                        # test each AP for KARMA and email an alert
                         if self.Shared_Mem_Dictionary[i].getKARMA() > 0:
                             #IiGOmf81PYyenrwDrB86B3A
                             fromaddr = 'rougedetection@gmail.com'
@@ -108,8 +119,8 @@ class accumulator(threading.Thread):
                             server.quit()
                             print "\nKARMA Alert Emailed!"
                             del(self.Shared_Mem_Dictionary[i])
-                            
-                        elif self.Shared_Mem_Dictionary[i].getAirbaseNG > 0:
+                        # Test each AP for Airbase-NG detection and email an alert 
+                        elif self.Shared_Mem_Dictionary[i].getAirbaseNG() > 0:
                             fromaddr = 'rougedetection@gmail.com'
                             toaddrs  = 'rougedetection@gmail.com'
                             SUBJECT  = "KARMA ACCESS POINT DETECTED!!"
@@ -129,7 +140,9 @@ class accumulator(threading.Thread):
                 print "----", e
                 print(traceback.format_exc())
                 print(sys.exc_info()[0])
-            
+    '''
+    add the shared memory dictionary and manager
+    '''
     def setSMem(self,Shared_Mem_Dictionary, mgr):
         self.Shared_Mem_Dictionary = Shared_Mem_Dictionary
         self.manager = mgr
