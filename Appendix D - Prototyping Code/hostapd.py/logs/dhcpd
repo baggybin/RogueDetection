@@ -1,0 +1,9 @@
+Starting dhcpd...
+Internet Systems Consortium DHCP Server 4.2.4
+Copyright 2004-2012 Internet Systems Consortium.
+All rights reserved.
+For info, please visit https://www.isc.org/software/dhcp/
+Wrote 0 leases to leases file.
+Listening on LPF/wlan3/c8:3a:35:cc:97:60/10.0.0.0/24
+Sending on   LPF/wlan3/c8:3a:35:cc:97:60/10.0.0.0/24
+Sending on   Socket/fallback/fallback-net

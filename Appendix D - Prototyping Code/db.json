@@ -1,0 +1,1 @@
+{"_default": {"1": {"ssid": "lyre", "no": 1, "encrypted": true, "signal": -78, "frequency": "2.412 GHz", "mode": "Master", "address": "C0:4A:00:E4:B6:70", "channel": 1}, "2": {"frequency": "2.457 GHz", "ssid": "Zoom", "no": 3, "encrypted": false, "signal": -67, "address": "00:50:18:66:8B:7E", "channel": 10, "mode": "Master"}}}
