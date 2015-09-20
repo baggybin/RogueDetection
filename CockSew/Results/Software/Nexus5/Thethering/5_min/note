@@ -1,7 +1,0 @@
-[  -11.64127422   -10.7190878     -9.79576528 ...,  2689.10400552
-  2690.02709394  2690.94834401]
-RMSE 45.91209687020165119974990375339984893798828125
-Attempting to set identical left==right results
-in singular transformations; automatically expanding.
-left=1, right=1.0
-no beacons collected 2931
