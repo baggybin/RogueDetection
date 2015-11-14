@@ -105,14 +105,14 @@ class accumulator(threading.Thread):
                     for i in d:
                         # test each AP for KARMA and email an alert
                         if self.Shared_Mem_Dictionary[i].getKARMA() > 0:
-                            #IiGOmf81PYyenrwDrB86B3A
+                            #
                             fromaddr = 'rougedetection@gmail.com'
                             toaddrs  = 'rougedetection@gmail.com'
                             SUBJECT  = "KARMA ACCESS POINT DETECTED!!"
                             text = 'KARMA ACCESS POINT Deteceted '  + str(self.Shared_Mem_Dictionary[i].getKARMABSSID())
                             msg = 'Subject: %s\n\n%s' % (SUBJECT, text)
                             username = "rougedetection"
-                            password = "IiGOmf81PYyenrwDrB86B3A"
+                            password = ""
                             server = smtplib.SMTP('smtp.gmail.com:587')
                             server.starttls()
                             server.login(username,password)
@@ -128,7 +128,7 @@ class accumulator(threading.Thread):
                             text = 'AIRBASE-NG ACCESS POINT Deteceted '  + str(self.Shared_Mem_Dictionary[i].getSSID())
                             msg = 'Subject: %s\n\n%s' % (SUBJECT, text)
                             username = "rougedetection"
-                            password = "IiGOmf81PYyenrwDrB86B3A"
+                            password = ""
                             server = smtplib.SMTP('smtp.gmail.com:587')
                             server.starttls()
                             server.login(username,password)
