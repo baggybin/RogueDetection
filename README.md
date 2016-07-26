@@ -1,4 +1,4 @@
-# RougeDetection
+# RogueDetection
 rogue Access Point Detection and WIDS
 
 The project involved an in-depth research into current methodologies in use for rogue access point detection. The chosen approach taken involved aspects of many of the different methodologies that were investigated, with a particular directive in developing a wireless side detection system for a client station that was not reliant on information derived from a wired backbone network. The type of rogue access points of particular interest in this area were phishing rogue such as KARMA based attacks and Evil Twins. 
